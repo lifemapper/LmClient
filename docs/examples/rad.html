@@ -1,0 +1,837 @@
+<html>
+   <head>
+      <title>RAD Module Documentation</title>
+      <style type="text/css">
+         code
+         {
+            background-color: #f8f8f8;
+            border: solid 1px #000000;
+            color: #000000;
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            white-space: pre-line;
+         }
+      </style>
+   </head>
+   <body>
+      <h1>Lifemapper Range and Diversity (RAD) Module</h1>
+      <p>
+         With this release of the Lifemapper client library, we have included
+         the Range and Diversity module for creating and exploring macroecology
+         experiments.  Below you will find a list of available functions in
+         this module.
+      </p>
+      <hr />
+      <!-- ............................................................... -->
+      <ul>
+         <li>
+            <a href="#Experiments">Experiments</a>
+            <ul>
+               <li><a href="#countExperiments">countExperiments</a></li>
+               <li><a href="#getExperiment">getExperiment</a></li>
+               <li><a href="#listExperiments">listExperiments</a></li>
+               <li><a href="#postExperiment">postExperiment</a></li>
+               <li>
+                  <a href="#Buckets">Buckets</a>
+                  <ul>
+                     <li><a href="#countBuckets">countBuckets</a></li>
+                     <li><a href="#getBucket">getBucket</a></li>
+                     <li><a href="#getBucketShapegridData">getBucketShapegridData</a></li>
+                     <li><a href="#listBuckets">listBuckets</a></li>
+                     <li><a href="#addBucket">addBucket</a></li>
+                     <li><a href="#intersectBucket">intersectBucket</a></li>
+                     <li><a href="#randomizeBucket">randomizeBucket</a></li>
+                  </ul>
+               </li>
+               <li>
+                  <a href="#PALayers">Presence Absence Layers</a>
+                  <ul>
+                     <li><a href="#addPALayer">addPALayer</a></li>
+                     <li><a href="#getPALayers">getPALayers</a></li>
+                  </ul>
+               </li>
+               <li>
+                  <a href="#PamSums">PAM Sums</a>
+                  <ul>
+                     <li><a href="#countPamSums">countPamSums</a></li>
+                     <li><a href="#getPamSum">getPamSum</a></li>
+                     <li><a href="#getPamSumShapegrid">getPamSumShapegrid</a></li>
+                     <li><a href="#getPamSumStatistic">getPamSumStatistic</a></li>
+                     <li><a href="#getPamSumStatisticsKeys">getPamSumStatisticsKeys</a></li>
+                     <li><a href="#listPamSums">listPamSums</a></li>
+                     <li><a href="#calculatePamSumStatistics">calculatePamSumStatistics</a></li>
+                     <li><a href="#compressPamSum">compressPamSum</a></li>
+                  </ul>
+               </li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Layers">Layers</a>
+            <ul>
+               <li><a href="#countLayers">countLayers</a></li>
+               <li><a href="#getLayer">getLayer</a></li>
+               <li><a href="#listLayers">listLayers</a></li>
+               <li><a href="#postRaster">postRaster</a></li>
+               <li><a href="#postVector">postVector</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Shapegrids">Shape Grids</a>
+            <ul>
+               <li><a href="#countShapegrids">countShapegrids</a></li>
+               <li><a href="#getShapegrid">getShapegrid</a></li>
+               <li><a href="#listShapegrids">listShapegrids</a></li>
+               <li><a href="#postShapegrid">postShapegrid</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Other">Other Functions</a>
+            <ul>
+               <li><a href="#getStatusStage">getStatusStage</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Deprecated">Deprecated Functions</a>
+            <ul>
+               <li><a href="#calculate">calculate</a></li>
+               <li><a href="#compress">compress</a></li>
+               <li><a href="#dummyCallback">dummyCallback</a></li>
+               <li><a href="#getBucketStatus">getBucketStatus</a></li>
+               <li><a href="#getShapegridData">getShapegridData</a></li>
+               <li><a href="#getStatistic">getStatistic</a></li>
+               <li><a href="#getStatisticsKeys">getStatisticsKeys</a></li>
+               <li><a href="#getPamSumStatus">getPamSumStatus</a></li>
+               <li><a href="#intersect">intersect</a></li>
+               <li><a href="#postShapefile">postShapefile</a></li>
+               <li><a href="#randomize">randomize</a></li>
+            </ul>
+         </li>
+      </ul>
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="Experiments">Experiments</a></h1>
+      <p>
+         Lifemapper RAD experiments are containers for the data you will use 
+         for macroecological experiments.
+      </p>
+      <!-- .......................... -->
+      <h3><a id="countExperiments">Count Experiments</a></h3>
+      <p>
+         The "countExperiments" function allows you to count the number of 
+         Lifemapper RAD experiments that match the parameters you specify.  
+         Information about these parameters can be found in the code 
+         documentation.
+         <br />
+         <br />
+         Example: Count RAD experiments with EPSG code 4326
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.countExperiments(epsgCode=4326)
+            3
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getExperiment">Get Experiment</a></h3>
+      <p>
+         The "getExperiment" function allows you to retrieve an experiment
+         <br />
+         <br />
+         Example: Get experiment 12345
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; exp = cl.rad.getExperiment(12345)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="listExperiments">List Experiments</a></h3>
+      <p>
+         The "listExperiments" function returns a list of RAD experiments that
+         match the specified parameters.  More information about these 
+         parameters can be found in the code documentation.
+         <br />
+         <br />
+         Example: List 20 RAD experiments
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; exps = cl.rad.listExperiments(perPage=20)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="postExperiment">Post Experiment</a></h3>
+      <p>
+         The "postExperiment" function creates a new RAD experiment.  It takes
+         a name parameter and an EPSG code to start.
+         <br />
+         <br />
+         Example: Post a new experiment named 'MyExp' with EPSG 3410
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; exp = cl.rad.postExperiment('MyExp', 3410)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="Buckets">Buckets</a></h1>
+      <p>
+         Lifemapper Range and Diversity buckets are containers for calculations
+         based on a certain extent and resolution.  Experiments can have many
+         buckets to explore the effects of scale.
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="countBuckets">Count Buckets</a></h3>
+      <p>
+         The "countBuckets" function counts the number of buckets that match
+         the specified criteria.  Information about the available parameters
+         can be found in the code documentation.
+         <br />
+         <br />
+         Example: Count all buckets for experiment 123
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; count = cl.rad.countBuckets(123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getBucket">Get Bucket</a></h3>
+      <p>
+         The "getBucket" function returns metadata for the chosen bucket.  It 
+         takes the id of the bucket and the id of its experiment for input.
+         <br />
+         <br />
+         Example: Get bucket 123 for experiment 456
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; bkt = cl.rad.getBucket(456, 123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getBucketShapegridData">Get Bucket Shape Grid Data</a></h3>
+      <p>
+         The "getBucketShapegridData" function allows you to retrieve the 
+         shape grid attached to a bucket.  You can optionally retrieve the 
+         shape grid with values from the intersected presence / absence layers.
+         <br />
+         <br />
+         Example: Get bucket 123 of experiment 456's shape grid intersected.  
+         Store it at /tmp/shapeGridData.zip
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.getBucketShapegridData('/tmp/shapeGridData.zip', 456, 123, intersected=True)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="listBuckets">List Buckets</a></h3>
+      <p>
+         The "listBuckets" function returns a list of buckets that match the 
+         parameters specified.  Information about these parameters can be found
+         in the code documentation.
+         <br />
+         <br />
+         Example: List the buckets of experiment 123
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; bkts = cl.rad.listBuckets(123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="addBucket">Add bucket</a></h3>
+      <p>
+         The "addBucket" function adds a new bucket to an experiment.  It will
+         build a new shape grid for this bucket based on the parameters you 
+         specify.
+         <br />
+         <br />
+         Example: Add a bucket to experiment 123 with the name 'MyShape' using 
+         hexagonal cells of size 0.5 decimal degrees for EPSG 4326 and for the
+         western hemisphere
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; bkt = cl.rad.addBucket(123, 'MyShape', 'hexagon', 0.5, 'dd', 4326, '-180,-90, 0, 90')
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="intersectBucket">Intersect Bucket</a></h3>
+      <p>
+         The "intersectBucket" function performs an intersection of the cells
+         in the bucket's shape grid with the presence / absence layers of the
+         experiment.
+         <br />
+         <br />
+         Example: Request an intersection for bucket 123 of experiment 456
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.intersectBucket(456, bucketId=123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="randomizeBucket">Randomize Bucket</a></h3>
+      <p>
+         The "randomizeBucket" function sends a request to randomize a bucket
+         which will result in a new randomized pam sum.  There are currently
+         two methods for randomizing a bucket, swap and splotch.  Additionally,
+         the swap randomization algorithm takes a parameter for the number of
+         iterations to perform.
+         <br />
+         <br />
+         Example: Randomize bucket 123 of experiment 456 using splotch
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.randomizeBucket(456, 123, method='splotch')
+            &gt;&gt;&gt; cl.close()
+         </code>
+         <br />
+         Example: Randomize bucket 123 of experiment 456 using swap and 10000 
+         iterations
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.randomizeBucket(456, 123, method='swap', iterations=10000)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="PALayers">Presence Absence Layers</a></h1>
+      <p>
+         Presence / Absence layers are used to create PAMs.  They are a pairing
+         of an uploaded layer and a set of presence / absence values indicating
+         what should be considered presence or absence.
+      </p>
+      
+      <!-- .......................... -->
+      <h3><a id="addPALayer">Add Presence / Absence Layer</a></h3>
+      <p>
+         The "addPALayer" adds a new presence absence layer to an experiment.
+         The same layer can have multiple presence / absence values associated
+         with it.  Note: Use 'pixel' for the presence attribute of a raster
+         layer
+         <br />
+         <br />
+         Example: Add presence / absence values for the raster layer 123 to the
+         experiment 456.  Set the minimum presence to be 100 and the max to be
+         254 and 40% coverage to be considered present. 
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.addPALayer(456, 123, 'pixel', 100, 254, 40)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getPALayers">Get Presence / Absence Layers</a></h3>
+      <p>
+         The "getPALayers" function returns the presence absence layers 
+         associated with an experiment
+         <br />
+         <br />
+         Example: Get the PA layers for experiment 1234
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; paLyrs = cl.rad.getPALayers(1234)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="PamSums">PAM Sums</a></h1>
+      <p>
+         PAM Sums (Presence Absence Matrices and Summaries) are used to create
+         the statistics and analysis for the Lifemapper Range and Diversity 
+         module.  They are matrices of sites on one axis and presence or 
+         absence for a layer on the other axis. 
+      </p>
+      
+      <!-- .......................... -->
+      <h3><a id="countPamSums">Count PAM Sums</a></h3>
+      <p>
+         The "countPamSums" function counts the number of PAM Sums that match
+         the specified criteria.  Information about the available parameters 
+         can be found in the code documentation.
+         <br />
+         <br />
+         Example: Count all pam sums for bucket 123 of experiment 456
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cnt = cl.rad.countPamSums(456, 123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getPamSum">Get PAM Sum</a></h3>
+      <p>
+         The "getPamSum" function returns the metadata for a PAM Sum.  It takes
+         the ids of the experiment, bucket, and pam sum as input.
+         <br />
+         <br />
+         Example: Get pam sum 123 of bucket 456 of experiment 789
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; ps = cl.rad.getPamSum(789, 456, 123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <h3><a id="getPamSumShapegrid">Get PAM Sum Shape Grid</a></h3>
+      <p>
+         The "getPamSumShapegrid" function returns the data from the PAM Sum
+         attached to the cells of the shape grid as a zipped shapefile.
+         <br />
+         <br />
+         Example: Get the PAM Sum shape grid for PAM Sum 123 of bucket 456 of
+         experiment 789 and save it to /tmp/ps123.zip
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.getPamSumShapegrid('/tmp/ps123.zip', 789, 456, 123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getPamSumStatistic">Get PAM Sum Statistic</a></h3>
+      <p>
+         The "getPamSumStatistic" function requests a computed statistic about
+         the PAM Sum from the server.  Make sure to request that the statistics
+         are calculated first.
+         <br />
+         <br />
+         Example: Get the diversity statistic 'whittakersBeta' for pam sum 123 
+         of bucket 456 of experiment 789
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; whitBeta = cl.rad.getPamSumStatistic(789, 456, 123, 'whittakersbeta')
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getPamSumStatisticsKeys">Get PAM Sum Statistics Keys</a></h3>
+      <p>
+         The "getPamSumStatisticsKeys" function returns a list of the available
+         statistics for a PAM Sum.  You can select which type of keys to return
+         by setting the 'key' parameter to either keys, specieskeys, siteskeys,
+         or diversitykeys
+         <br />
+         <br />
+         Example: Get the species statistics keys for PAM Sum 123 of bucket 456
+         of experiment 789
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; statKeys = cl.rad.getPamSumStatisticsKeys(789, 456, 123, keys="specieskeys"))
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="listPamSums">List PAM Sums</a></h3>
+      <p>
+         The "listPamSums" function returns a list of PAM Sums that match the
+         specified parameters.  Information about these parameters can be found
+         in the code documentation.
+         <br />
+         <br />
+         Example: List PAM Sums randomized with the swap algorithm for bucket
+         123 of experiment 456
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; pss = cl.rad.listPamSums(456, 123, randomized=1, randomMethod=1)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="calculatePamSumStatistics">Calculate PAM Sum Statistics</a></h3>
+      <p>
+         The "calculatePamSumStatistics" function tells the server that it 
+         should calculate statistics for the specified PAM Sum
+         <br />
+         <br />
+         Example: Request the statistics for PAM Sum 123 of bucket 456 of 
+         experiment 789 to be calculated
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.calculatePamSumStatistics(789, 456, 123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="compressPamSum">Compress PAM Sum</a></h3>
+      <p>
+         The "compressPamSum" function requests that a PAM Sum be compressed
+         by removing empty rows and columns
+         <br />
+         <br />
+         Example: Compress PAM Sum 123 of bucket 456 of experiment 789
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cl.rad.compressPamSum(789, 456, 123)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="Layers">Layers</a></h1>
+      <p>
+         Lifemapper RAD layers are spatial raster or vector layers that will be
+         used in a macroecology experiment.  They could be climate data, 
+         distribution maps, masks, or anything else.
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="countLayers">Count Layers</a></h3>
+      <p>
+         The "countLayers" function counts the number of RAD layers that match
+         the specified parameters.  Information about the available parameters
+         can be found in the code documentation.
+         <br />
+         <br />
+         Example: Count layers that have the name 'someName'
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; count = cl.rad.countLayers(layerName='someName')
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getLayer">Get Layer</a></h3>
+      <p>
+         The "getLayer" function allows you to retrieve metadata for a layer.
+         This function only takes the id of the layer you would like to 
+         retrieve as input.
+         <br />
+         <br />
+         Example: Get layer 12345
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; lyr = cl.rad.getLayer(12345)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="listLayers">List Layers</a></h3>
+      <p>
+         The "listLayers" function allows you to return a list of layers that 
+         match the specified parameters.  Information about these parameters 
+         can be found in the code documentation.
+         <br />
+         <br />
+         Example: List the first 4 layers with EPSG 2163
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; lyrs = cl.rad.listLayers(perPage=4, epsgCode=2163)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="postRaster">Post Raster Layer</a></h3>
+      <p>
+         The "postRaster" function allows you to post a raster layer to be used
+         in macroecological experiments.  
+         <br />
+         <br />
+         Example: Post a raster file named 'MyRasterLayer' located at 
+         '/layers/myRasterLayer.tif'
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; lyr = cl.rad.postRaster('MyRasterLayer', filename='/layers/myRasterLayer.tif', dataForamt='GTiff')
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="postVector">Post Vector Layer</a></h3>
+      <p>
+         The "postVector" function allows you to post a vector layer to be used
+         in macroeclogical experiments.  You can either supply a filename for
+         a shapefile that has been zipped together or point it at the .shp file
+         of the shapefile and it will be uploaded.
+         <br />
+         <br />
+         Example: Post a vector shapefile named 'MyShape' located at '/layers/myShape.shp' 
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; lyr = cl.rad.postVector('MyShape', filename='/layers/myShape.shp')
+            &gt;&gt;&gt; cl.close()
+         </code>
+         <br />
+         Example: Post a vector shapefile named 'MyShapeZip' located at '/layers/myShape.zip' 
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; lyr = cl.rad.postVector('MyShapeZip', filename='/layers/myShape.zip')
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="Shapegrids">Shape Grids</a></h1>
+      <p>
+         Lifemapper shapegrids are discription of area of interest containing 
+         cells upon which statistics will be analyzed.
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="countShapegrids">Count Shape Grids</a></h3>
+      <p>
+         The "countShapegrids" function counts the number of shape grids that 
+         match the criteria you specify.  More information about the available
+         parameters can be found in the code documentation.
+         <br />
+         <br />
+         Example: Count the number of square-shaped shapegrids for some user
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; cnt = cl.rad.countShapegrids(cellSides=4)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getShapegrid">Get Shape Grid</a></h3>
+      <p>
+         The "getShapegrid" function retrieves the metadata for a shapegrid 
+         specified by its id.
+         <br />
+         <br />
+         Example: Get Shape Grid 12345
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; sg = cl.rad.getShapegrid(12345)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="listShapegrids">List Shape Grids</a></h3>
+      <p>
+         The "listShapegrids" function returns a list of shape grids that match
+         the criteria specified.  More information about the available 
+         parameters can be found in the code documentation.
+         <br />
+         <br />
+         Example: List the first 10 shapegrids with hexagonal cells
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; sgs = cl.rad.listShapegrids(perPage=10, cellsides=6)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="postShapegrid">Post Shape Grid</a></h3>
+      <p>
+         The "postShapegrid" function creates a new shape grid layer in the
+         Lifemapper system.  It takes parameters to specify the extent, cell
+         shape and size, map projection, and even a mask if desired.
+         <br />
+         <br />
+         Example: Create a shapegrid with the name 'MyShapeGrid' with square
+         cells that are 1 decimal degree in length / width in the geographic
+         coordinate system (EPSG 4326) and global extent
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; sg = cl.rad.postShapegrid('MyShapeGrid', 'square', 1, 'dd', 4326, '-180,-90,180,90')
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="Other">Other Functions</a></h1>
+      <p>
+         The other RAD functions are helper functions that can be useful for
+         multiple objects.
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getStatusStage">Get Status Stage</a></h3>
+      <p>
+         The "getStatusStage" function returns the status and stage of objects
+         that have those attributes
+         <br />
+         <br />
+         Example: Get the status and stage of bucket 123 of experiment 456
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; bkt = cl.rad.getBucket(456, 123)
+            &gt;&gt;&gt; status, stage = cl.rad.getStatusStage(bkt)
+            &gt;&gt;&gt; cl.close()
+         </code>
+         <br />
+         Example: Get the status and stage of pamsum 789 of bucket 123 of 
+         experiment 456
+         <code>
+            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
+            &gt;&gt;&gt; ps = cl.rad.getPamSum(456, 123, 789)
+            &gt;&gt;&gt; status, stage = cl.rad.getStatusStage(ps)
+            &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <h1><a id="Deprecated">Deprecated Functions</a></h1>
+      <p>
+         These functions have been deprecated and will be removed in future 
+         versions of the client.  They still work for this version but code 
+         should be migrated to prevent problems when updating later.
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="calculate">Calculate</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name
+         <br />
+         <b>Replace with:</b>
+         <a href="#calculatePamSumStatistics">calculatePamSumStatistics</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="compress">Compress</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name
+         <br />
+         <b>Replace with:</b>
+         <a href="#compressPamSum">compressPamSum</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="dummyCallback">Dummy Callback</a></h3>
+      <p>
+         <b>Reason:</b>
+         Temporary function
+         <br />
+         <b>Replace with:</b>
+         To be determined, this shouldn't be called directly
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getShapegridData">Get Shape Grid Data</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name.  This function returns data for a shapegrid attached
+         to a bucket.
+         <br />
+         <b>Replace with:</b>
+         <a href="#getBucketShapegridData">getBucketShapegridData</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getBucketStatus">Get Bucket Status</a></h3>
+      <p>
+         <b>Reason:</b>
+         Duplicates code
+         <br />
+         <b>Replace with:</b>
+         First, get the bucket with <a href="#getBucket">getBucket</a>, then 
+         pass that object as an argument to <a href="#getStatusStage">
+         getStatusStage</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getStatistic">Get Statistic</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name
+         <br />
+         <b>Replace with:</b>
+         <a href="#getPamSumStatistic">getPamSumStatistic</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getStatisticsKeys">Get Statistics Keys</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name
+         <br />
+         <b>Replace with:</b>
+         <a href="#getPamSumStatistic">getPamSumStatisticsKeys</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getPamSumStatus">Get Pam Sum Status</a></h3>
+      <p>
+         <b>Reason:</b>
+         Duplicates code
+         <br />
+         <b>Replace with:</b>
+         First, get the pamsum with <a href="#getPamSum">getPamSum</a>, then
+         pass that object as an argument to <a href="#getStatusStage">
+         getStatusStage</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="intersect">Intersect</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name
+         <br />
+         <b>Replace with:</b>
+         <a href="#intersectBucket">intersectBucket</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="postShapefile">Post Shapefile</a></h3>
+      <p>
+         <b>Reason:</b>
+         Misleading name.  This function actually creates a new shape grid.
+         Instead of posting a shapefile.  If you want to post a shapefile 
+         layer, use <a href="#postVector">postVector</a>
+         <br />
+         <b>Replace with:</b>
+         <a href="#postShapegrid">postShapegrid</a>
+         <br />
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="randomize">Randomize</a></h3>
+      <p>
+         <b>Reason:</b>
+         Ambiguous name
+         <br />
+         <b>Replace with:</b>
+         <a href="#randomizeBucket">randomizeBucket</a>
+         <br />
+      </p>
+   </body>
+</html>

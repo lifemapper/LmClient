@@ -1,0 +1,699 @@
+<html>
+   <head>
+      <title>SDM Module Documentation</title>
+      <style type="text/css">
+         code
+         {
+            background-color: #f8f8f8;
+            border: solid 1px #000000;
+            color: #000000;
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            white-space: pre-line;
+         }
+      </style>
+   </head>
+   <body>
+      <h1>Lifemapper Species Distribution Modeling (SDM) Module</h1>
+      <p>
+         The Lifemapper client library contains functionality for creating and
+         exploring species distribution models.  There are a number of 
+         algorithms available including Bioclim, GARP Best Subsets, and 
+         Maximum Entropy.  You can browse our archive of data or upload your
+         own data that you have cleaned and trust to create your own products.
+      </p>
+      <hr />
+      <!-- ............................................................... -->
+      <ul>
+         <li>
+            <a href="#Experiments">Experiments</a>
+            <ul>
+               <li><a href="#countExperiments">countExperiments</a></li>
+               <li><a href="#getExperiment">getExperiment</a></li>
+               <li><a href="#listExperiments">listExperiments</a></li>
+               <li><a href="#postExperiment">postExperiment</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Layers">Layers</a>
+            <ul>
+               <li><a href="#countLayers">countLayers</a></li>
+               <li><a href="#getLayer">getLayer</a></li>
+               <li><a href="#getLayerTiff">getLayerTiff</a></li>
+               <li><a href="#listLayers">listLayers</a></li>
+               <li><a href="#postLayer">postLayer</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#OccurrenceSets">Occurrence Sets</a>
+            <ul>
+               <li><a href="#countOccurrenceSets">countOccurrenceSets</a></li>
+               <li><a href="#getOccurrenceSet">getOccurrenceSet</a></li>
+               <li><a href="#getOccurrenceSetShapefile">getOccurrenceSetShapefile</a></li>
+               <li><a href="#listOccurrenceSets">listOccurrenceSets</a></li>
+               <li><a href="#postOccurrenceSet">postOccurrenceSet</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Projections">Projections</a>
+            <ul>
+               <li><a href="#countProjections">countProjections</a></li>
+               <li><a href="#getProjection">getProjection</a></li>
+               <li><a href="#getProjectionTiff">getProjectionTiff</a></li>
+               <li><a href="#listProjections">listProjections</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#Scenarios">Scenarios</a>
+            <ul>
+               <li><a href="#countScenarios">countScenarios</a></li>
+               <li><a href="#getScenario">getScenario</a></li>
+               <li><a href="#listScenarios">listScenarios</a></li>
+               <li><a href="#postScenario">postScenario</a></li>
+            </ul>
+         </li>
+         <li>
+            <a href="#TypeCodes">Type Codes</a>
+            <ul>
+               <li><a href="#countTypeCodes">countTypeCodes</a></li>
+               <li><a href="#getTypeCode">getTypeCode</a></li>
+               <li><a href="#listTypeCodes">listTypeCodes</a></li>
+               <li><a href="#postTypeCode">postTypeCode</a></li>
+            </ul>
+         </li>
+         <li><a href="#getAlgorithmFromCode">getAlgorithmFromCode</a></li>
+         <li><a href="#getOgcEndpoint">getOgcEndpoint</a></li>
+         <li><a href="#hint">hint</a></li>
+      </ul>
+      
+      <!-- ................................................................ -->
+      <hr />
+      <a id="Experiments"><h1>Experiments</h1></a>
+      <p>
+         Lifemapper SDM experiments are the combination of a habitat 
+         suitability model built from an algorithm, occurrence set, and 
+         environmental scenario and a group of projections built from applying
+         this model to alternate climate scenarios.
+      </p>
+      
+      <!-- .......................... -->
+      <a id="countExperiments"><h3>Count Experiments</h3></a>
+      <p>
+         The "countExperiments" function counts the number of experiments that
+         match the parameters specified in the request.  A list of the 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: Count user experiments with status = 300
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countExperiments(status=300)
+            34
+            >>> cl.close()
+         </code>
+         <br />
+         <br />
+         Example: Count public experiments built with the GARP Best Subsets 
+         algorithm
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countExperiments(algorithmCode='GARP_BS', public=True)
+            120384
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="getExperiment"><h3>Get Experiment</h3></a>
+      <p>
+         The "getExperiment" function gets an experiment from the server.  It 
+         only takes the id of the experiment you wish to retrieve as a 
+         parameter.<br />
+         <br />
+         Example: Get experiment 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> exp = cl.sdm.getExperiment(12345)
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="listExperiments"><h3>List Experiments</h3></a>
+      <p>
+         The "listExperiments" function returns a list of experiments that 
+         match the parameters specified in the request.  A list of the 
+         available parameters and their descriptions can be found in the code
+         documentation.<br />
+         <br />
+         Example: List the first 10 public experiments that were built with the 
+         map projection specified by EPSG 4326
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.listExperiments(perPage=10, epsgCode=4326, public=True)
+            >>> cl.close()
+         </code>
+         <br />
+         <br />
+         Example: List the second 50 user experiments
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.listExperiments(page=1, perPage=50)
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="postExperiment"><h3>Post Experiment</h3></a>
+      <p>
+         The "postExperiment" function allows you to post a new Lifemapper SDM
+         experiment.<br />
+         <br />
+         Example: Post an experiment base on occurrence set 12345, with the
+         modeling scenario 67, and the projection scenarios 67, 68, 69 using 
+         the ATT Maximum Entropy algorithm.
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> alg = cl.sdm.getAlgorithmFromCode('ATT_MAXENT')
+            >>> exp = cl.sdm.postExperiment(alg, 67, 12345, prjScns=[67, 68, 69])
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <a id="Layers"><h1>Layers</h1></a>
+      <p>
+         Lifemapper SDM layers are environmental layers in raster (gridded) 
+         format.  These objects contain the value of a single variable for 
+         every cell in a region.  Some examples are temperature in degrees 
+         Celsius or mean annual precipitation in centimeters.  These layers can
+         be in any map projection that can be specified by an EPSG code.
+      </p>
+      <!-- .......................... -->
+      <a id="countLayers"><h3>Count Layers</h3></a>
+      <p>
+         The "countLayers" function counts the number of environmental layers
+         that match the parameters specified in the request.  A list of the 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: Count user layers with the map projection specified by EPSG
+         2163
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countLayers(epsgCode=2163))
+            13
+            >>> cl.close()
+         </code>
+         <br />
+         <br />
+         Example: Count public layers with the type code 'BIO1'
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countLayers(typeCode='BIO1', public=True)
+            4
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getLayer"><h3>Get Layer</h3></a>
+      <p>
+         The "getLayer" function gets a layer from the server.  It 
+         only takes the id of the layer you wish to retrieve as a parameter.
+         <br />
+         <br />
+         Example: Get layer 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyr = cl.sdm.getLayer(12345)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getLayerTiff"><h3>Get Layer Tiff</h3></a>
+      <p>
+         The "getLayerTiff" function gets the layer's raster data in GeoTiff 
+         format.  If you give this function a filename, it will save the 
+         data to your file system.  If you want to do something with the data
+         first, you can omit the filename and the function will return the 
+         layer content to you as a string.<br />
+         <br />
+         Example: Get layer 12345 and save it to /tmp/layer12345.tif
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.getLayerTiff(12345, filename='/tmp/layer12345.tif')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="listLayers"><h3>List Layers</h3></a>
+      <p>
+         The "listLayers" function lists environmental layers that match the
+         parameters specified in the request.  A list of the available 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: List public layers with the type code 'BIO10'
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyrs = cl.sdm.listLayers(typeCode='BIO10', public=True)
+            >>> cl.close()
+         </code>
+         <br /><br />
+         Example: List user layers built with EPSG code 3140
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyrs = cl.sdm.listLayers(epsgCode=3140)
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="postLayer"><h3>Post Layer</h3></a>
+      <p>
+         The "postLayer" function allows you to post a new environmental layer
+         to be used in your SDM experiments.  It takes a number of parameters.
+         More information about these parameters is available in the code
+         documentation.<br />
+         <br />
+         Example: Post a layer in geographic projection (EPSG: 4326), named
+         "rainLayer", with the type code "RAINCODE", with each cell being 2.5 
+         decimal degrees and the data being located at /var/layers/rain.tif
+         (GeoTiff)
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.postLayer('rainLayer', 4326, 'RAINCODE', 'dd', 'GTiff', resolution=2.5)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <a id="OccurrenceSets"><h1>Occurrence Sets</h1></a>
+      <p>
+         Lifemapper SDM occurrence sets are made of point data in vector format
+         that indicate where an organism has been found.  They can be in any 
+         arbitrary map projection that can be specified by an EPSG code.
+      </p>
+      <!-- .......................... -->
+      <a id="countOccurrenceSets"><h3>Count Occurrence Sets</h3></a>
+      <p>
+         The "countOccurrenceSets" function counts the number of occurrence 
+         sets that match the parameters specified in the request.  A list of 
+         the parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: Count user occurrence sets with the map projection specified 
+         by EPSG 2163
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countOccurrenceSets(epsgCode=2163))
+            4
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="getOccurrenceSet"><h3>Get Occurrence Set</h3></a>
+      <p>
+         The "getOccurrenceSet" function gets an occurrence set from the 
+         server.  It only takes the id of the occurrence set you wish to 
+         retrieve as a parameter.
+         <br />
+         <br />
+         Example: Get occurrence set 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> occ = cl.sdm.getOccurrenceSet(12345)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getOccurrenceSetShapefile"><h3>Get Occurrence Set Shapefile</h3></a>
+      <p>
+         The "getOccurrenceSetShapefile" function gets the occurrence set's 
+         vector data as a zipped shapefile.  If you give this function a 
+         filename, it will save the data to your file system.  If you want to 
+         do something with the data first, you can omit the filename and the 
+         function will return the content to you as a string.<br />
+         <br />
+         Example: Get occurrence set 12345 and save it to /tmp/occ12345.zip
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.getOccurrenceSetShapefile(12345, filename='/tmp/occ12345.zip')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="listOccurrenceSets"><h3>List Occurrence Sets</h3></a>
+      <p>
+         The "listOccurrenceSetss" function lists occurrence sets that match 
+         the parameters specified in the request.  A list of the available 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: List user occurrence sets built with EPSG code 3140
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> occs = cl.sdm.listOccurrenceSets(epsgCode=3140)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="postOccurrenceSet"><h3>Post Occurrence Set</h3></a>
+      <p>
+         The "postOccurrenceSet" function allows you to add a new occurrence 
+         set for SDM experiments to the Lifemapper system.  It takes a name,
+         a file and file type as well as an option parameter for specifying 
+         the map projection (as an EPSG code) for your occurrence data.<br />
+         <br />
+         Example: Post an occurrence set from a CSV file at /layers/points.csv 
+         named 'MyPoints'
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> occ = cl.sdm.postOccurrenceSet('MyPoints', 'CSV', '/layers/points.csv')
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <a id="Projections"><h1>Projections</h1></a>
+      <p>
+         Lifemapper SDM projections are the predicted potential habitat of an 
+         organism for a specified climate scenario based on the application of
+         the model rule set created for an experiment.
+      </p>
+      <!-- .......................... -->
+      <a id="countProjections"><h3>Count Projections</h3></a>
+      <p>
+         The "countProjections" function counts the number of projections
+         that match the parameters specified in the request.  A list of the 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: Count user projections with the map projection specified by 
+         EPSG 4326 with status 300 (complete)
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countProjections(epsgCode=4326, status=300))
+            8
+            >>> cl.close()
+         </code>
+         <br />
+         <br />
+         Example: Count public projections with status 300
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countProjections(status=300, public=True)
+            4
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getProjection"><h3>Get Projection</h3></a>
+      <p>
+         The "getProjection" function gets a layer from the server.  It 
+         only takes the id of the projection you wish to retrieve as a 
+         parameter.
+         <br />
+         <br />
+         Example: Get projection 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> prj = cl.sdm.getProjection(12345)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getProjectionTiff"><h3>Get Projection Tiff</h3></a>
+      <p>
+         The "getProjectionTiff" function gets the projection's raster data in 
+         GeoTiff format.  If you give this function a filename, it will save 
+         the data to your file system.  If you want to do something with the 
+         data first, you can omit the filename and the function will return the 
+         projection content to you as a string.<br />
+         <br />
+         Example: Get projection 12345 and save it to /tmp/prj12345.tif
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.getProjectionTiff(12345, filename='/tmp/prj12345.tif')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="listProjections"><h3>List Projections</h3></a>
+      <p>
+         The "listProjections" function lists projections that match the
+         parameters specified in the request.  A list of the available 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: List the first 20 public projections with status 300
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyrs = cl.sdm.listProjections(perPage=20, status=300, public=True)
+            >>> cl.close()
+         </code>
+         <br /><br />
+         Example: List user projections built with EPSG code 3140
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyrs = cl.sdm.listProjections(epsgCode=3140)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <a id="Scenarios"><h1>Scenarios</h1></a>
+      <p>
+         Lifemapper SDM climate scenarios are groups of environmental layers.
+         These layers should represent different climate variables for the same
+         time period and geographic coverage.  They can be either observed 
+         conditions are predictions of conditions.
+      </p>
+      <!-- .......................... -->
+      <a id="countScenarios"><h3>Count Scenarios</h3></a>
+      <p>
+         The "countScenarios" function counts the number of climate scenarios
+         that match the parameters specified in the request.  A list of the 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: Count user scenarios with the map projection specified by 
+         EPSG 4326
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countScenarios(epsgCode=4326))
+            2
+            >>> cl.close()
+         </code>
+         <br />
+         <br />
+         Example: Count public scenarios with the 'observed' keyword
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countScenarios(keyword=['observed'], public=True)
+            1
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getScenario"><h3>Get Scenario</h3></a>
+      <p>
+         The "getScenario" function gets a climate scenario from the server.  
+         It only takes the id of the scenario you wish to retrieve as a 
+         parameter.
+         <br />
+         <br />
+         Example: Get scenario 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyr = cl.sdm.getScenario(12345)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="listScenarios"><h3>List Scenarios</h3></a>
+      <p>
+         The "listScenarios" function lists climate scenarios that match the
+         parameters specified in the request.  A list of the available 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: List public scenarios that match scenario 32
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyrs = cl.sdm.listScenarios(matchingScenario=32, public=True)
+            >>> cl.close()
+         </code>
+         <br /><br />
+         Example: List user scenarios built with EPSG code 3140
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> lyrs = cl.sdm.listScenarios(epsgCode=3140)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="postScenario"><h3>Post Scenario</h3></a>
+      <p>
+         The "postScenario" function allows you to add a new scenario for 
+         creating SDM models and projections to the Lifemapper system.  You 
+         will need to supply a few parameters at a minimum when posting a new
+         scenario.  More information about these parameters is available in the
+         code documentation.<br />
+         <br />
+         Example: Post a scenario with EPSG 4326; layers 1, 6, 23, 43, and 94;
+         with the code 'MyScn' and resolution of 2.5 decimal degrees
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> scn = cl.sdm.postScenario([1, 6, 23, 43, 94], 'MyScn', 4326, 'dd', title='My Scenario', resolution=2.5)
+            >>> cl.close()
+         </code> 
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <a id="TypeCodes"><h1>Type Codes</h1></a>
+      <p>
+         Lifemapper SDM type codes are codes that describe a particular type of
+         environmental layer.  Environmental layers with the same type code are
+         "matched" so that they can be compared across climate scenarios.
+      </p>
+      <!-- .......................... -->
+      <a id="countTypeCodes"><h3>Count Type Codes</h3></a>
+      <p>
+         The "countTypeCodes" function counts the number of layer type codes
+         that match the parameters specified in the request.  A list of the 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: Count user type codes
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.countTypeCodes()
+            3
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <a id="getTypeCode"><h3>Get Type Code</h3></a>
+      <p>
+         The "getTypeCode" function allows you to get a type code object.  The
+         only parameter needed is the id of the type code you wish to retrieve.
+         <br /><br />
+         Example: Get type code 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> tc = cl.sdm.getTypeCode(12345)
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="listTypeCodes"><h3>List Type Codes</h3></a>
+      <p>
+         The "listTypeCodes" function returns a list of layer type codes
+         that match the parameters specified in the request.  A list of the 
+         parameters and their descriptions can be found in the code 
+         documentation.<br />
+         <br />
+         Example: List user type codes
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> tcs = cl.sdm.listTypeCodes()
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="postTypeCode"><h3>Post Type Code</h3></a>
+      <p>
+         The "postTypeCode" function allows you to post a new type code to be
+         used for matching environmental layers.  This post request can be as 
+         simple as just adding a character string identifying it.  You can also
+         add a title and description.<br />
+         <br />
+         Example: Post a new type code called 'MyType' with a simple title and
+         description
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> tc = cl.sdm.postTypeCode('MyType', title='My Type Code', description='A simple example layer type code')
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
+      <a id="other"><h1>Other Functions</h1></a>
+      <p>
+         There are other Lifemapper SDM functions that don't belong to a 
+         particular group.  They are listed here.
+      </p>
+      <!-- .......................... -->
+      <a id="getAlgorithmFromCode"><h3>Get Algorithm From Code</h3></a>
+      <p>
+         The "getAlgorithmFromCode" function lets you get an algorithm object
+         from the client that matches the algorithm code you supply.  This 
+         should be used with adding a new SDM experiment.<br />
+         <br />
+         Example: Get the algorithm with code GARP_BS
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> alg = cl.sdm.getAlgorithmFromCode('GARP_BS')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="getOgcEndpoint"><h3>Get OGC Endpoint</h3></a>
+      <p>
+        The "getOgcEndpoint" function takes in one of the SDM spatial objects
+        and returns the OGC end point that can be used for WMS or WCS requests.
+        This function will be moved in the next version of the client.<br />
+        <br />
+        Example: Get the OGC endpoint of projection 12345
+        <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> prj = cl.sdm.getProjection(12345)
+            >>> cl.sdm.getOgcEndpoint(prj)
+            'http://lifemapper.org/ogc?map=data_54349&layer=prj_12345'
+            >>> cl.close()
+        </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="hint"><h3>Hint</h3></a>
+      <p>
+         The "hint" function allows you to access the Lifemapper hint service
+         to search for occurrence sets based on partial taxon names.  You must
+         provide at least three characters for your search.<br />
+         <br />
+         Example: Get results that match 'Acaci'
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> hits = cl.sdm.hint('Acaci')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- ................................................................ -->
+   </body>
+</html>

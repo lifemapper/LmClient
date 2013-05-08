@@ -1,0 +1,80 @@
+<html>
+   <head>
+      <title>Lifemapper Client Library Documentation</title>
+      <style type="text/css">
+         code
+         {
+            background-color: #f8f8f8;
+            border: solid 1px #000000;
+            color: #000000;
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            white-space: pre-line;
+         }
+      </style>
+   </head>
+   <body>
+      <h1>Lifemapper Client Library</h1>
+      <p>
+         The Lifemapper client library is a group of Python modules that allow
+         you to access the Lifemapper web services.  These functions abstract
+         the details of the requests and responses so that they can be used in
+         a framework that is familiar to the developer.
+      </p>
+      
+      <!-- ............................................................... -->
+      <ul>
+         <li>
+            <a href="#LMClient">LMClient</a>
+         </li>
+         <li>
+            <a href="#OutOfDateException">OutOfDateException</a>
+         </li>
+      </ul>
+      
+      <!-- ............................................................... -->
+      <hr />
+      <a id="LMClient"><h1>Lifemapper Client</h1></a>
+      <p>
+         The "LMClient" class is the class you will instantiate when using the
+         Lifemapper web services.  It is really just a container that handles 
+         authentication and houses Lifemapper service groups such as Species
+         Distribution Modeling services (SDM) and Range and Diversity (RAD).
+         Documentation about each service group can be found on their 
+         respective pages.  The client takes an optional user name and password
+         on construction that allows you to log into a specific Lifemapper user
+         account to use for interacting with the Lifemapper web services.<br />
+         <br />
+         Example: Instantiate the Lifemapper client using the anonymous user
+         account
+         <code>
+            >>> cl = LMClient()
+                 --- do stuff ---
+            >>> cl.logout()
+         </code>
+         <br />
+         Example: Instantiate the Lifemapper client using user credentials
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='someUserPassword')
+                 --- do stuff ---
+            >>> cl.logout()
+         </code>
+      </p>
+      
+      <!-- ............................................................... -->
+      <hr />
+      <a id="OutOfDateException"><h1>Client out of date exception</h1></a>
+      <p>
+         The "OutOfDateException" exception is thrown when the version of the 
+         Lifemapper client library you are using becomes out of date and is no
+         longer compatible with the current version of the Lifemapper web 
+         services.  When a new version of the client library is released, you 
+         will begin to receive warnings that you do not have the most 
+         up-to-date version.  This exception will only be thrown when the 
+         version of the client you have is no longer usable and you will need
+         to update.
+      </p>
+      
+   </body>
+</html>
