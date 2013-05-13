@@ -3,7 +3,7 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 2.0.0
+@version: 2.0.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -30,10 +30,10 @@
 
 longDesc = """\
 This is the Lifemapper Python client library used to access the Lifemapper
-Species Distribution Modeling web services and new with version 2.0.0, the 
+Species Distribution Modeling web services and new with version 2.0.1, the 
 Lifemapper Range and Diversity services.
 
-With version 2.0.0 the library functions have been grouped and moved under
+With version 2.0.1 the library functions have been grouped and moved under
 sub-modules.  So species distribution web services are now under the sdm 
 module and the new range and diversity services are available under rad.
 """
@@ -42,7 +42,7 @@ module and the new range and diversity services are available under rad.
 from setuptools import setup, find_packages
 
 setup(name="Lifemapper_Client",
-      version="2.0.0",
+      version="2.0.1",
       description="A Python client for accessing Lifemapper web services",
       author="CJ Grady",
       author_email="cjgrady@ku.edu",

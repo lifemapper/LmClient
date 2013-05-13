@@ -1,7 +1,7 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 2.0.0
+@version: 2.0.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research

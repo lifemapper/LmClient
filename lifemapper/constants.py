@@ -1,7 +1,7 @@
 """
 @summary: Constants for the Lifemapper web service clients
 @author: CJ Grady
-@version: 2.0.0
+@version: 2.0.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -28,7 +28,7 @@
 
 WEBSITE_ROOT = "http://lifemapper.org"
 LM_NAMESPACE = "http://lifemapper.org"
-LM_CLIENT_VERSION_URL = "http://sporks.nhm.ku.edu/clients/versions.xml"
+LM_CLIENT_VERSION_URL = "http://lifemapper.org/clients/versions.xml"
 
 DEFAULT_POST_USER = "anon"
 DEFAULT_USER = "lm2"

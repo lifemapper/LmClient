@@ -2,7 +2,7 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 2.0.0
+@version: 2.0.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -334,6 +334,27 @@ class SDMClient(object):
       return obj
 
    # .........................................
+   def getLayerKML(self, lyrId, filename=None):
+      """
+      @summary: Gets a Lifemapper layer as a kml file
+      @param lyrId: The id of the layer to be returned. [integer]
+      @param filename: (optional) The location to save the resulting file, if
+                          None, the string is returned
+      @note: This function will be removed in a later version in favor of 
+                specifying the format when making the get request
+      @raise Exception: Raised if write fails
+      """
+      url = "%s/services/sdm/layers/%s/kml" % (WEBSITE_ROOT, lyrId)
+      cnt = self.cl.makeRequest(url, method="GET")
+      if filename is not None:
+         f = open(filename, 'w')
+         f.write(cnt)
+         f.close()
+         return None
+      else:
+         return cnt
+
+   # .........................................
    def getLayerTiff(self, lyrId, filename=None):
       """
       @summary: Gets a Lifemapper layer as a tiff file
@@ -525,6 +546,27 @@ class SDMClient(object):
       return obj
    
    # .........................................
+   def getOccurrenceSetKML(self, occId, filename=None):
+      """
+      @summary: Gets a Lifemapper occurrence set as a kml file
+      @param occId: The id of the occurrence set to get. [integer]
+      @param filename: (optional) The name of the file location to save the 
+                          output. [string]  If it is not provided the content 
+                          will be returned as a string
+      @note: This function will be removed in a later version in favor of 
+                specifying the format when making the get request
+      """
+      url = "%s/services/sdm/occurrences/%s/kml" % (WEBSITE_ROOT, occId)
+      cnt = self.cl.makeRequest(url, method="GET")
+      if filename is not None:
+         f = open(filename, 'w')
+         f.write(cnt)
+         f.close()
+         return None
+      else:
+         return cnt
+   
+   # .........................................
    def getOccurrenceSetShapefile(self, occId, filename=None):
       """
       @summary: Gets a Lifemapper occurrence set as a shapefile
@@ -695,6 +737,27 @@ class SDMClient(object):
       obj = self.cl.makeRequest(url, method="GET", objectify=True).projection
       return obj
    
+   # .........................................
+   def getProjectionKML(self, prjId, filename=None):
+      """
+      @summary: Gets a Lifemapper projection as a kml file
+      @param prjId: The id of the projection to be returned. [integer]
+      @param filename: (optional) The location to save the resulting file, if 
+                          None, return the content of the response
+      @raise Exception: Raised if write fails
+      @note: This function will be removed in a later version in favor of 
+                specifying the format when making the get request
+      """
+      url = "%s/services/sdm/projections/%s/kml" % (WEBSITE_ROOT, prjId)
+      cnt = self.cl.makeRequest(url, method="GET")
+      if filename is not None:
+         f = open(filename, 'w')
+         f.write(cnt)
+         f.close()
+         return None
+      else:
+         return cnt
+
    # .........................................
    def getProjectionTiff(self, prjId, filename=None):
       """

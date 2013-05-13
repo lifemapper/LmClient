@@ -9,7 +9,7 @@ Author: CJ Grady
 
 Email: cjgrady@ku.edu
 
-Version: 2.0.0
+Version: 2.0.1
 
 Purpose
 ========
