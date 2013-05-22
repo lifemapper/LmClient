@@ -456,3 +456,14 @@ def removeNonesFromTupleList(paramsList):
          ret.append(param)
    return ret
 
+# .............................................................................
+def stringifyError(err):
+   """
+   @summary: This really only adds information for urllib2.HTTPErrors that 
+                include an 'Error-Message' header
+   @param err: The exception to stringify
+   """
+   try:
+      return err.hdrs['Error-Message']
+   except:
+      return str(err)
