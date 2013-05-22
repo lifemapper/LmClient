@@ -254,7 +254,8 @@ class SDMClient(object):
                                         name=param.name, value=param.value) \
                                      for param in algorithmParameters])) \
                                         if len(algorithmParameters) > 0 else ""
-      
+      mMask = "            <lm:modelMask>%s</lm:modelMask>" % mdlMask if mdlMask is not None else ""
+      pMask = "            <lm:projectionMask>%s</lm:projectionMask>" % prjMask if prjMask is not None else ""
       emailSection = "            <lm:email>%s</lm:email>" % email if email is not None else ""
       prjSection = '\n'.join(([
           "            <lm:projectionScenario>{scnId}</lm:projectionScenario>".format(scnId=scnId) for scnId in prjScns]))
@@ -270,13 +271,15 @@ class SDMClient(object):
                </lm:algorithm>
                <lm:occurrenceSetId>{occSetId}</lm:occurrenceSetId>
                <lm:modelScenario>{mdlScn}</lm:modelScenario>
+{mMask}
 {email}
 {projections}
+{pMask}
             </lm:experiment>
          </lm:request>""".format(algorithmCode=algoCode, 
                                  algoParams=algoParams, occSetId=occSetId, 
-                                 mdlScn=mdlScn, email=emailSection, 
-                                 projections=prjSection)
+                                 mdlScn=mdlScn, mMask=mMask, email=emailSection, 
+                                 projections=prjSection, pMask=pMask)
       url = "%s/services/sdm/experiments/" % WEBSITE_ROOT
       obj = self.cl.makeRequest(url, 
                                 method="POST", 
