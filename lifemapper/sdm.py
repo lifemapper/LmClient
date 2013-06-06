@@ -2,7 +2,7 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 2.0.1
+@version: 2.1.0
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -250,7 +250,7 @@ class SDMClient(object):
                      {params}
                   </lm:parameters>
 """.format(params='\n                     '.join(
-                     ["<{name}>{value}</{name}>".format(
+                     ["<lm:{name}>{value}</lm:{name}>".format(
                                         name=param.name, value=param.value) \
                                      for param in algorithmParameters])) \
                                         if len(algorithmParameters) > 0 else ""

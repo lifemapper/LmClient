@@ -1,7 +1,7 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 2.0.1
+@version: 2.1.0
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -693,129 +693,6 @@ class RADClient(object):
                                               ("randomMethod", randomMethod),
                                               ("fullObjects", int(fullObjects))])
 
-   # .........................................
-   def calculatePamSumStatistics(self, expId, bucketId, pamsumId=None):
-      """
-      @summary: Requests that statistics are calculated for a pamsum or all of
-                   the pamsums in a bucket
-      @param expId: The id of the experiment that contains the buckets / pamsums
-      @param bucketId: The id of the bucket
-      @param pamSumId: (optional) The id of the pamsum to calculate statistics
-                          for.  If this is not provided, statistics will be 
-                          calculated for all pamsums in the bucket
-      """
-      postXml = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<wps:Execute version="1.0.0" service="WPS" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             xmlns="http://www.opengis.net/wps/1.0.0" 
-             xmlns:wfs="http://www.opengis.net/wfs" 
-             xmlns:wps="http://www.opengis.net/wps/1.0.0" 
-             xmlns:ows="http://www.opengis.net/ows/1.1" 
-             xmlns:xlink="http://www.w3.org/1999/xlink" 
-             xmlns:lmRad="http://lifemapper.org"
-             xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
-  <ows:Identifier>calculate</ows:Identifier>
-  <wps:DataInputs>
-%s
-  </wps:DataInputs>
-  <wps:ResponseForm>
-    <wps:RawDataOutput mimeType="application/gml-3.1.1">
-      <ows:Identifier>result</ows:Identifier>
-    </wps:RawDataOutput>
-  </wps:ResponseForm>
-</wps:Execute>
-""" % """\
-      <wps:Input>
-         <ows:Identifier>pamsumId</ows:Identifier>
-         <wps:Data>
-            <wps:LiteralData>%s</wps:LiteralData>
-         </wps:Data>
-      </wps:Input>
-""" % pamsumId if pamsumId is not None else """\
-      <wps:Input>
-         <ows:Identifier>bucketId</ows:Identifier>
-         <wps:Data>
-            <wps:LiteralData>%s</wps:LiteralData>
-         </wps:Data>
-      </wps:Input>
-""" % bucketId
-   
-      url = "%s/services/rad/experiments/%s/buckets/%s/%scalculate" % (
-               WEBSITE_ROOT, expId, bucketId, 
-               "pamsums/%s/" % pamsumId if pamsumId is not None else "")
-      obj = self.cl.makeRequest(url, 
-                                method="POST", 
-                                parameters=[("request", "Execute")], 
-                                body=postXml, 
-                                headers={"Content-Type" : "application/xml"},
-                                objectify=True)
-      if obj.Status.ProcessAccepted is not None:
-         if pamsumId is not None:
-            return lambda : self.getPamSumStatus(expId, bucketId, pamsumId)
-         else:
-            return lambda : self.getBucketStatus(expId, bucketId)
-      else:
-         return False
-
-   # .........................................
-   def compressPamSum(self, expId, bucketId, pamsumId=None):
-      """
-      @summary: Requests that a pamsum (or pamsums) is compressed
-      @param expId: The id of the experiment containing the bucket
-      @param bucketId: The id of the bucket containing the pamsum(s)
-      @param pamsumId: (optional) The id of the pamsum to compress.  If this is
-                          not provided, all pamsums in a bucket will be 
-                          compressed
-      """
-      postXml = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<wps:Execute version="1.0.0" service="WPS" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             xmlns="http://www.opengis.net/wps/1.0.0" 
-             xmlns:wfs="http://www.opengis.net/wfs" 
-             xmlns:wps="http://www.opengis.net/wps/1.0.0" 
-             xmlns:ows="http://www.opengis.net/ows/1.1" 
-             xmlns:xlink="http://www.w3.org/1999/xlink" 
-             xmlns:lmRad="http://lifemapper.org"
-             xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
-  <ows:Identifier>compress</ows:Identifier>
-  <wps:DataInputs>
-%s
-  </wps:DataInputs>
-  <wps:ResponseForm>
-    <wps:RawDataOutput mimeType="application/gml-3.1.1">
-      <ows:Identifier>result</ows:Identifier>
-    </wps:RawDataOutput>
-  </wps:ResponseForm>
-</wps:Execute>
-""" % """\
-      <wps:Input>
-         <ows:Identifier>pamsumId</ows:Identifier>
-         <wps:Data>
-            <wps:LiteralData>%s</wps:LiteralData>
-         </wps:Data>
-      </wps:Input>
-""" % pamsumId if pamsumId is not None else ""
-   
-      url = "%s/services/rad/experiments/%s/buckets/%s/compress" % (
-                                                                  WEBSITE_ROOT, 
-                                                                  expId, 
-                                                                  bucketId)
-      obj = self.cl.makeRequest(url, 
-                                method="POST", 
-                                parameters=[("request", "Execute")], 
-                                body=postXml, 
-                                headers={"Content-Type" : "application/xml"},
-                                objectify=True)
-      if obj.Status.ProcessAccepted is not None:
-         if bucketId is not None:
-            return lambda : self.getBucketStatus(expId, bucketId)
-         else:
-            return lambda : self.dummyCallback()
-      else:
-         return False
-
    # -------------------------------------------------------------------------
    
    # =========================================================================
@@ -1171,33 +1048,6 @@ class RADClient(object):
    # =========================================================================
    # =                         Deprecated Functions                          =
    # =========================================================================
-   # .........................................
-   def calculate(self, expId, bucketId, pamsumId=None):
-      """
-      @summary: Requests that statistics are calculated for a pamsum or all of
-                   the pamsums in a bucket
-      @param expId: The id of the experiment that contains the buckets / pamsums
-      @param bucketId: The id of the bucket
-      @param pamSumId: (optional) The id of the pamsum to calculate statistics
-                          for.  If this is not provided, statistics will be 
-                          calculated for all pamsums in the bucket
-      @deprecated: Replace with calculatePamSumStatistics
-      """
-      return self.calculatePamSumStatistics(expId, bucketId, pamsumId=pamsumId)
-
-   # .........................................
-   def compress(self, expId, bucketId, pamsumId=None):
-      """
-      @summary: Requests that a pamsum (or pamsums) is compressed
-      @param expId: The id of the experiment containing the bucket
-      @param bucketId: The id of the bucket containing the pamsum(s)
-      @param pamsumId: (optional) The id of the pamsum to compress.  If this is
-                          not provided, all pamsums in a bucket will be 
-                          compressed
-      @deprecated: Replace with compressPamSum
-      """
-      return self.compressPamSum(expId, bucketId, pamsumId=pamsumId)
-
    # .........................................
    def dummyCallback(self):
       """
