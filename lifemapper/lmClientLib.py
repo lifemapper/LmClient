@@ -3,7 +3,7 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 2.1.0
+@version: 2.1.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -66,6 +66,10 @@ class OutOfDateException(Exception):
                 web services.
    """
    def __init__(self, myVersion, minVersion):
+      """
+      @param myVersion: The current version of the client library
+      @param minVersion: The minimum required version of the client library
+      """
       Exception.__init__(self)
       self.myVersion = myVersion
       self.minVersion = minVersion
@@ -84,14 +88,15 @@ class LMClient(object):
    @summary: Lifemapper client library class
    """
    # .........................................
-   def __init__(self, userId=DEFAULT_POST_USER, pwd=None):
+   def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):
       """
       @summary: Constructor
       @param userId: (optional) The id of the user to use for this session
       @param pwd: (optional) The password for the specified user
+      @param server: (optional) The Lifemapper webserver address
       @note: Lifemapper RAD services are not available anonymously
       """
-      self._cl = _Client(userId=userId, pwd=pwd)
+      self._cl = _Client(userId=userId, pwd=pwd, server=server)
       self._cl.checkVersion()
       self.sdm = SDMClient(self._cl)
       if userId not in [DEFAULT_POST_USER, DEFAULT_USER]:
@@ -109,18 +114,20 @@ class _Client(object):
    """
    @summary: Private Lifemapper client class
    """
-   __version__ = "2.1.0"
+   __version__ = "2.1.1"
 
    # .........................................
-   def __init__(self, userId=DEFAULT_POST_USER, pwd=None):
+   def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):
       """
       @summary: Constructor of LMClient
       @param userId: (optional) User id to use if different from the default
                         [string]
       @param pwd: (optional) Password for optional user id. [string]
+      @param server: (optional) The Lifemapper web server root address
       """
       self.userId = userId
       self.pwd = pwd
+      self.server = server
       
       self.cookieJar = cookielib.LWPCookieJar()
       opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
@@ -288,7 +295,7 @@ class _Client(object):
       """
       if self.userId != DEFAULT_POST_USER and self.userId != DEFAULT_USER and \
                         self.pwd is not None:
-         url = "%s/login" % WEBSITE_ROOT
+         url = "%s/login" % self.server
          
          urlParams = [("username", self.userId), ("pword", self.pwd)]
          
@@ -299,7 +306,7 @@ class _Client(object):
       """
       @summary: Logs the user out
       """
-      url = '/'.join((WEBSITE_ROOT, "logout"))
+      url = '/'.join((self.server, "logout"))
       self.makeRequest(url)
 
 # .............................................................................

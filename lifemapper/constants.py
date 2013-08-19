@@ -1,7 +1,7 @@
 """
 @summary: Constants for the Lifemapper web service clients
 @author: CJ Grady
-@version: 2.1.0
+@version: 2.1.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research

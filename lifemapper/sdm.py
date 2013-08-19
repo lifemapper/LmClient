@@ -2,7 +2,7 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 2.1.0
+@version: 2.1.1
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -39,7 +39,7 @@
 """
 from collections import namedtuple
 
-from constants import CONTENT_TYPES, WEBSITE_ROOT  
+from constants import CONTENT_TYPES
 
 # .............................................................................
 class AlgorithmParameter(object):
@@ -48,6 +48,15 @@ class AlgorithmParameter(object):
    """
    def __init__(self, name, pType, pDefault=None, pMin=None, pMax=None, 
                                                                   pValue=None):
+      """
+      @summary: Constructor
+      @param name: The name of the algorithm parameter
+      @param pType: The type of the parameter (integer, string, float, etc)
+      @param pDefault: (optional) The default value of the parameter
+      @param pMin: (optional) The minimum value of the parameter
+      @param pMax: (optional) The maximum value of the parameter
+      @param pValue: (optional) The value of the parameter
+      """
       self.name = name
       self.type = pType
       self.default = pDefault
@@ -57,7 +66,14 @@ class AlgorithmParameter(object):
       
 # .............................................................................
 class Algorithm(object):
+   """
+   @summary: Algorithm class
+   """
    def __init__(self, clAlg):
+      """
+      @summary: Constructor
+      @param clAlg: Client library algorithm object
+      """
       self.code = clAlg.code
       self.name = clAlg.name
       self.parameters = []
@@ -85,6 +101,7 @@ class SDMClient(object):
    def __init__(self, cl):
       """
       @summary: Constructor
+      @param cl: Lifemapper client for connection to web services
       """
       self.cl = cl
       self.algos = self._getAlgorithms()
@@ -95,7 +112,7 @@ class SDMClient(object):
       @summary: Gets available Lifemapper SDM algorithms
       @return: Lifemapper algorithms
       """
-      url = "%s/clients/algorithms.xml" % WEBSITE_ROOT
+      url = "%s/clients/algorithms.xml" % self.cl.server
       obj = self.cl.makeRequest(url, method="GET", objectify=True)
       return obj
    
@@ -105,6 +122,7 @@ class SDMClient(object):
       @summary: Deep copies an algorithm object and adds a value attribute to 
                    each parameter that is populated with the default value for
                    that parameter
+      @param code: The code of the algorithm to return
       """
       alg = None
       for algo in self.algos:
@@ -123,8 +141,9 @@ class SDMClient(object):
    # ===============
    # .........................................
    def countExperiments(self, afterTime=None, beforeTime=None, 
-                              displayName=None, epsgCode=None, algorithmCode=None, 
-                              occurrenceSetId=None, status=None, public=False):
+                              displayName=None, epsgCode=None, 
+                              algorithmCode=None, occurrenceSetId=None, 
+                              status=None, public=False):
       """
       @summary: Counts the number of experiments that match the specified 
                    criteria.
@@ -150,7 +169,7 @@ class SDMClient(object):
       @return: The total number of experiments that match the given criteria.
                   [integer]
       """
-      url = "%s/services/sdm/experiments/" % WEBSITE_ROOT
+      url = "%s/services/sdm/experiments/" % self.cl.server
       params = [
                 ("afterTime", afterTime),
                 ("beforeTime", beforeTime),
@@ -171,7 +190,7 @@ class SDMClient(object):
       @param expId: The id of the experiment to be returned. [integer]
       @return: A Lifemapper experiment [LmAttObj]
       """
-      url = "%s/services/sdm/experiments/%s" % (WEBSITE_ROOT, expId)
+      url = "%s/services/sdm/experiments/%s" % (self.cl.server, expId)
       obj = self.cl.makeRequest(url, method="GET", objectify=True).experiment
       return obj
     
@@ -220,14 +239,14 @@ class SDMClient(object):
                 ("public", int(public)),
                 ("fullObjects", int(fullObjects))
                ]
-      url = "%s/services/sdm/experiments/" % WEBSITE_ROOT
+      url = "%s/services/sdm/experiments/" % self.cl.server
       items = self.cl.getList(url, parameters=params)
       return items
    
    # .........................................
    def postExperiment(self, algorithm, mdlScn, occSetId, prjScns=[], 
                             mdlMask=None, prjMask=None, 
-                            email=None):
+                            email=None, name=None, description=None):
       """
       @summary: Post a new Lifemapper experiment
       @param algorithm: An Lifemapper SDM algorithm object 
@@ -237,6 +256,14 @@ class SDMClient(object):
                           experiment. [integer]
       @param prjScns: (optional) List of projection scenario ids to use for the 
                          experiment [list of integers]
+      @param mdlMask: (optional) A layer id mask to use when looking at the 
+                         input climate layers of the model [integer]
+      @param prjMask: (optional) A layer id mask to use when projecting onto a 
+                         new set of climate layers [integer]
+      @param email: (optional) Lifemapper will send a notification email to 
+                       this address when the experiment has completed
+      @param name: (optional) A name for this experiment
+      @param description: (optional) A description for this experiment
       @return: Experiment
       """
       try:
@@ -257,6 +284,8 @@ class SDMClient(object):
       mMask = "            <lm:modelMask>%s</lm:modelMask>" % mdlMask if mdlMask is not None else ""
       pMask = "            <lm:projectionMask>%s</lm:projectionMask>" % prjMask if prjMask is not None else ""
       emailSection = "            <lm:email>%s</lm:email>" % email if email is not None else ""
+      nameSection = "            <lm:name>%s</lm:name>" % name if name is not None else ""
+      descSection = "            <lm:description>%s</lm:description>" % description if description is not None else ""
       prjSection = '\n'.join(([
           "            <lm:projectionScenario>{scnId}</lm:projectionScenario>".format(scnId=scnId) for scnId in prjScns]))
       postXml = """\
@@ -273,14 +302,17 @@ class SDMClient(object):
                <lm:modelScenario>{mdlScn}</lm:modelScenario>
 {mMask}
 {email}
+{name}
+{description}
 {projections}
 {pMask}
             </lm:experiment>
          </lm:request>""".format(algorithmCode=algoCode, 
                                  algoParams=algoParams, occSetId=occSetId, 
                                  mdlScn=mdlScn, mMask=mMask, email=emailSection, 
-                                 projections=prjSection, pMask=pMask)
-      url = "%s/services/sdm/experiments/" % WEBSITE_ROOT
+                                 projections=prjSection, pMask=pMask,
+                                 name=nameSection, description=descSection)
+      url = "%s/services/sdm/experiments/" % self.cl.server
       obj = self.cl.makeRequest(url, 
                                 method="POST", 
                                 body=postXml, 
@@ -321,7 +353,7 @@ class SDMClient(object):
                 ("typeCode", typeCode),
                 ("public", int(public))
                ]
-      url = "%s/services/sdm/layers/" % WEBSITE_ROOT
+      url = "%s/services/sdm/layers/" % self.cl.server
       count = self.cl.getCount(url, params)
       return count
    
@@ -332,7 +364,7 @@ class SDMClient(object):
       @param lyrId: The id of the layer to be returned. [integer]
       @return: A Lifemapper layer 
       """
-      url = "%s/services/sdm/layers/%s" % (WEBSITE_ROOT, lyrId)
+      url = "%s/services/sdm/layers/%s" % (self.cl.server, lyrId)
       obj = self.cl.makeRequest(url, method="GET", objectify=True).layer
       return obj
 
@@ -347,7 +379,7 @@ class SDMClient(object):
                 specifying the format when making the get request
       @raise Exception: Raised if write fails
       """
-      url = "%s/services/sdm/layers/%s/kml" % (WEBSITE_ROOT, lyrId)
+      url = "%s/services/sdm/layers/%s/kml" % (self.cl.server, lyrId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          f = open(filename, 'w')
@@ -368,7 +400,7 @@ class SDMClient(object):
                 specifying the format when making the get request
       @raise Exception: Raised if write fails
       """
-      url = "%s/services/sdm/layers/%s/tiff" % (WEBSITE_ROOT, lyrId)
+      url = "%s/services/sdm/layers/%s/tiff" % (self.cl.server, lyrId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          f = open(filename, 'w')
@@ -416,7 +448,7 @@ class SDMClient(object):
                 ("public", int(public)),
                 ("fullObjects", int(fullObjects))
                ]
-      url = "%s/services/sdm/layers/" % WEBSITE_ROOT
+      url = "%s/services/sdm/layers/" % self.cl.server
       items = self.cl.getList(url, parameters=params)
       return items
    
@@ -488,7 +520,7 @@ class SDMClient(object):
       else:
          raise Exception, "Must either specify a file to upload or a url to a file when posting a layer"
          
-      url = "%s/services/sdm/layers" % WEBSITE_ROOT
+      url = "%s/services/sdm/layers" % self.cl.server
       obj = self.cl.makeRequest(url, 
                                 method="POST", 
                                 parameters=params, 
@@ -533,7 +565,7 @@ class SDMClient(object):
                 ("minimumNumberOfPoints", minimumNumberOfPoints),
                 ("public", int(public))
                ]
-      url = "%s/services/sdm/occurrences/" % WEBSITE_ROOT
+      url = "%s/services/sdm/occurrences/" % self.cl.server
       count = self.cl.getCount(url, params)
       return count
    
@@ -544,7 +576,7 @@ class SDMClient(object):
       @param occId: The id of the occurrence set to be returned. [integer]
       @return: A Lifemapper occurrence set. 
       """
-      url = "%s/services/sdm/occurrences/%s" % (WEBSITE_ROOT, occId)
+      url = "%s/services/sdm/occurrences/%s" % (self.cl.server, occId)
       obj = self.cl.makeRequest(url, method="GET", objectify=True).occurrence
       return obj
    
@@ -559,7 +591,7 @@ class SDMClient(object):
       @note: This function will be removed in a later version in favor of 
                 specifying the format when making the get request
       """
-      url = "%s/services/sdm/occurrences/%s/kml" % (WEBSITE_ROOT, occId)
+      url = "%s/services/sdm/occurrences/%s/kml" % (self.cl.server, occId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          f = open(filename, 'w')
@@ -580,7 +612,7 @@ class SDMClient(object):
       @note: This function will be removed in a later version in favor of 
                 specifying the format when making the get request
       """
-      url = "%s/services/sdm/occurrences/%s/shapefile" % (WEBSITE_ROOT, occId)
+      url = "%s/services/sdm/occurrences/%s/shapefile" % (self.cl.server, occId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          f = open(filename, 'w')
@@ -631,7 +663,7 @@ class SDMClient(object):
                 ("public", int(public)),
                 ("fullObjects", int(fullObjects))
                ]
-      url = "%s/services/sdm/occurrences/" % WEBSITE_ROOT
+      url = "%s/services/sdm/occurrences/" % self.cl.server
       items = self.cl.getList(url, parameters=params)
       return items
    
@@ -666,7 +698,7 @@ class SDMClient(object):
          postBody = ''.join(f.readlines())
          f.close()
       
-      url = "%s/services/sdm/occurrences" % WEBSITE_ROOT
+      url = "%s/services/sdm/occurrences" % self.cl.server
       obj = self.cl.makeRequest(url, 
                                 method="POST", 
                                 parameters=parameters, 
@@ -725,7 +757,7 @@ class SDMClient(object):
                 ("status", status),
                 ("public", int(public))
                ]
-      url = "%s/services/sdm/projections/" % WEBSITE_ROOT
+      url = "%s/services/sdm/projections/" % self.cl.server
       count = self.cl.getCount(url, params)
       return count
    
@@ -736,7 +768,7 @@ class SDMClient(object):
       @param prjId: The id of the projection to be returned. [integer]
       @return: A Lifemapper projection.
       """
-      url = "%s/services/sdm/projections/%s" % (WEBSITE_ROOT, prjId)
+      url = "%s/services/sdm/projections/%s" % (self.cl.server, prjId)
       obj = self.cl.makeRequest(url, method="GET", objectify=True).projection
       return obj
    
@@ -751,7 +783,7 @@ class SDMClient(object):
       @note: This function will be removed in a later version in favor of 
                 specifying the format when making the get request
       """
-      url = "%s/services/sdm/projections/%s/kml" % (WEBSITE_ROOT, prjId)
+      url = "%s/services/sdm/projections/%s/kml" % (self.cl.server, prjId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          f = open(filename, 'w')
@@ -772,7 +804,7 @@ class SDMClient(object):
       @note: This function will be removed in a later version in favor of 
                 specifying the format when making the get request
       """
-      url = "%s/services/sdm/projections/%s/tiff" % (WEBSITE_ROOT, prjId)
+      url = "%s/services/sdm/projections/%s/tiff" % (self.cl.server, prjId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          f = open(filename, 'w')
@@ -791,7 +823,7 @@ class SDMClient(object):
       @return: A url pointing to the desired interface for the projection
       @todo: Check that the url is valid
       """
-      url = "%s/services/sdm/projections/%s/%s" % (WEBSITE_ROOT, prjId, frmt)
+      url = "%s/services/sdm/projections/%s/%s" % (self.cl.server, prjId, frmt)
       return url
    
    # .........................................
@@ -850,7 +882,7 @@ class SDMClient(object):
                 ("public", int(public)),
                 ("fullObjects", int(fullObjects))
                ]
-      url = "%s/services/sdm/projections/" % WEBSITE_ROOT
+      url = "%s/services/sdm/projections/" % self.cl.server
       items = self.cl.getList(url, parameters=params)
       return items
    
@@ -889,7 +921,7 @@ class SDMClient(object):
                ]
       for kw in keyword:
          params.append(("keyword", kw))
-      url = "%s/services/sdm/scenarios/" % WEBSITE_ROOT
+      url = "%s/services/sdm/scenarios/" % self.cl.server
       count = self.cl.getCount(url, params)
       return count
    
@@ -900,7 +932,7 @@ class SDMClient(object):
       @param scnId: The id of the scenario to be returned. [integer]
       @return: A Lifemapper scenario.
       """
-      url = "%s/services/sdm/scenarios/%s" % (WEBSITE_ROOT, scnId)
+      url = "%s/services/sdm/scenarios/%s" % (self.cl.server, scnId)
       obj = self.cl.makeRequest(url, method="GET", objectify=True).scenario
       return obj
    
@@ -944,7 +976,7 @@ class SDMClient(object):
                ]
       for kw in keyword:
          params.append(("keyword", kw))
-      url = "%s/services/sdm/scenarios/" % WEBSITE_ROOT
+      url = "%s/services/sdm/scenarios/" % self.cl.server
       items = self.cl.getList(url, parameters=params)
       return items
    
@@ -989,7 +1021,7 @@ class SDMClient(object):
          
       for lyr in layers:
          params.append(("layer", lyr))
-      url = "%s/services/sdm/scenarios" % WEBSITE_ROOT
+      url = "%s/services/sdm/scenarios" % self.cl.server
       
       obj = self.cl.makeRequest(url, 
                                 method="post", 
@@ -1021,7 +1053,7 @@ class SDMClient(object):
                 ("beforeTime", beforeTime),
                 ("public", int(public))
                ]
-      url = "%s/services/sdm/typecodes/" % WEBSITE_ROOT
+      url = "%s/services/sdm/typecodes/" % self.cl.server
       count = self.cl.getCount(url, params)
       return count
    
@@ -1032,7 +1064,7 @@ class SDMClient(object):
       @param tcId: The database id of the type code to retrieve [integer]
       @return: A type code object
       """
-      url = "%s/services/sdm/typecodes/%s" % (WEBSITE_ROOT, tcId)
+      url = "%s/services/sdm/typecodes/%s" % (self.cl.server, tcId)
       obj = self.cl.makeRequest(url, method="GET", objectify=True).typecode
       return obj
    
@@ -1064,7 +1096,7 @@ class SDMClient(object):
                 ("public", int(public)),
                 ("fullObjects", int(fullObjects))
                ]
-      url = "%s/services/sdm/typecodes/" % WEBSITE_ROOT
+      url = "%s/services/sdm/typecodes/" % self.cl.server
       items = self.cl.getList(url, parameters=params)
       return items
    
@@ -1083,7 +1115,7 @@ class SDMClient(object):
                 ("title", title),
                 ("description", description)
                ]
-      url = "%s/services/sdm/typecodes" % WEBSITE_ROOT
+      url = "%s/services/sdm/typecodes" % self.cl.server
       obj = self.cl.makeRequest(url, 
                                 method="post", 
                                 parameters=params,
@@ -1108,7 +1140,7 @@ class SDMClient(object):
       params = [
                 ("maxReturned", maxReturned)
                ]
-      url = "%s/hint/species/%s" % (WEBSITE_ROOT, query)
+      url = "%s/hint/species/%s" % (self.cl.server, query)
       
       res = self.cl.makeRequest(url, method="get", parameters=params)
       
