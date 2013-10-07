@@ -1,7 +1,7 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 2.1.1
+@version: 2.1.2
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
@@ -80,6 +80,21 @@ class RADClient(object):
       obj = self.cl.makeRequest(url, method="GET", objectify=True).experiment
       return obj
    
+   # .........................................
+   def getExperimentLayerIndices(self, expId, fileName):
+      """
+      @summary: Returns the layer indices for an experiment as a pickle
+      @param expId: The id of the experiment to return the indicies for
+      @param fileName: The file to store the pickled data in
+      """
+      url = "%s/services/rad/experiments/%s/indices" % (self.cl.server, expId)
+      resp = self.cl.makeRequest(url, method="GET")
+      try:
+         open(fileName, 'w').write(resp)
+      except Exception, _:
+         return False
+      return True
+      
    # .........................................
    def listExperiments(self, afterTime=None, beforeTime=None, epsgCode=None, 
                                        page=0, perPage=100, fullObjects=False):
@@ -187,6 +202,24 @@ class RADClient(object):
       return True
    
    # .........................................
+   def getBucketSitesPresent(self, filePath, expId, bucketId):
+      """
+      @summary: Gets the sites present for a bucket (original pamsum) as a 
+                   pickle
+      @param filePath: The path of the location to save this file
+      @param expId: The experiment containing the bucket
+      @param bucketId: The id of the bucket to get the shapegrid for
+      """
+      url = "%s/services/rad/experiments/%s/buckets/%s/presence" % \
+               (self.cl.server, expId, bucketId)
+      resp = self.cl.makeRequest(url, method="GET")
+      try:
+         open(filePath, 'w').write(resp)
+      except Exception, _:
+         return False
+      return True
+   
+   # .........................................
    def listBuckets(self, expId, afterTime=None, beforeTime=None, page=0, 
                                                perPage=100, fullObjects=False):
       """
@@ -259,6 +292,55 @@ class RADClient(object):
   </wps:ResponseForm>
 </wps:Execute>
 """ % (shpName, cellShape, cellSize, mapUnits, epsgCode, bbox, "                 <lmRad:cutout>%s</lmRad:cutout>" % cutout if cutout is not None else "")
+      
+      url = "%s/services/rad/experiments/%s/addbucket" % (self.cl.server, expId)
+      obj = self.cl.makeRequest(url, 
+                                method="POST", 
+                                parameters=[("request", "Execute")], 
+                                body=postXml, 
+                                headers={"Content-Type" : "application/xml"},
+                                objectify=True)
+      if obj.Status.ProcessSucceeded is not None:
+         return obj.Status.ProcessOutputs.Output.Data.LiteralData.value
+      else:
+         return False
+
+   # .........................................
+   def addBucketByShapegridId(self, expId, shpId):
+      """
+      @summary: Adds a bucket to an experiment
+      @param expId: The id of the experiment to add a bucket to
+      @param shpId: The id of the shapegrid to use for this bucket
+      """
+      postXml = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<wps:Execute version="1.0.0" service="WPS" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns="http://www.opengis.net/wps/1.0.0" 
+             xmlns:wfs="http://www.opengis.net/wfs" 
+             xmlns:wps="http://www.opengis.net/wps/1.0.0" 
+             xmlns:ows="http://www.opengis.net/ows/1.1" 
+             xmlns:xlink="http://www.w3.org/1999/xlink" 
+             xmlns:lmRad="http://lifemapper.org"
+             xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
+  <ows:Identifier>addbucket</ows:Identifier>
+  <wps:DataInputs>
+      <wps:Input>
+         <ows:Identifier>bucket</ows:Identifier>
+         <wps:Data>
+            <wps:ComplexData>
+               <lmRad:shapegridId>%s</lmRad:shapegridId>
+            </wps:ComplexData>
+         </wps:Data>
+      </wps:Input>
+  </wps:DataInputs>
+  <wps:ResponseForm>
+    <wps:RawDataOutput mimeType="application/gml-3.1.1">
+      <ows:Identifier>result</ows:Identifier>
+    </wps:RawDataOutput>
+  </wps:ResponseForm>
+</wps:Execute>
+""" % shpId
       
       url = "%s/services/rad/experiments/%s/addbucket" % (self.cl.server, expId)
       obj = self.cl.makeRequest(url, 

@@ -2,7 +2,7 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 2.1.1
+@version: 2.1.2
 @status: release
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
