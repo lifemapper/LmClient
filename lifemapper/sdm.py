@@ -403,7 +403,7 @@ class SDMClient(object):
       url = "%s/services/sdm/layers/%s/tiff" % (self.cl.server, lyrId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
-         f = open(filename, 'w')
+         f = open(filename, 'wb')
          f.write(cnt)
          f.close()
          return None
@@ -615,7 +615,7 @@ class SDMClient(object):
       url = "%s/services/sdm/occurrences/%s/shapefile" % (self.cl.server, occId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
-         f = open(filename, 'w')
+         f = open(filename, 'wb')
          f.write(cnt)
          f.close()
          return None
@@ -807,7 +807,7 @@ class SDMClient(object):
       url = "%s/services/sdm/projections/%s/tiff" % (self.cl.server, prjId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
-         f = open(filename, 'w')
+         f = open(filename, 'wb')
          f.write(cnt)
          f.close()
          return None

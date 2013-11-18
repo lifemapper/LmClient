@@ -196,7 +196,7 @@ class RADClient(object):
                 "" if intersected else "shapegrid/")
       sf = self.cl.makeRequest(url, method="GET")
       try:
-         open(filePath, 'w').write(sf)
+         open(filePath, 'wb').write(sf)
       except Exception, _:
          return False
       return True
@@ -697,7 +697,7 @@ class RADClient(object):
                (self.cl.server, experimentId, bucketId, pamsumId)
       sf = self.cl.makeRequest(url, method="GET")
       try:
-         open(filePath, 'w').write(sf)
+         open(filePath, 'wb').write(sf)
       except Exception, _:
          return False
       return True
