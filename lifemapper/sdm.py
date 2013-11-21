@@ -2,8 +2,8 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 2.1.2
-@status: release
+@version: 2.1.3
+@status: beta
 
 @license: Copyright (C) 2013, University of Kansas Center for Research
 
@@ -69,6 +69,7 @@ class Algorithm(object):
    """
    @summary: Algorithm class
    """
+   # .........................................
    def __init__(self, clAlg):
       """
       @summary: Constructor
@@ -92,6 +93,45 @@ class Algorithm(object):
                                 pMin=pMin, pMax=pMax)
          self.parameters.append(p)
          
+   # .........................................
+   def getParameter(self, parameterName):
+      """
+      @summary: Gets the algorithm parameter specified by parameterName
+      @param parameterName: The name of the parameter to return
+      @rtype: AlgorithmParameter
+      """
+      for param in self.parameters:
+         if param.name.lower() == parameterName.lower():
+            return param
+      
+      # If parameter not found, raise exception
+      raise Exception, "Parameter '%s' not found for this algorithm" \
+         % parameterName
+   
+   # .........................................
+   def listParameterNames(self):
+      """
+      @summary: Gets the names of the available parameters for the algorithm
+      """
+      return [p.name for p in self.parameters]
+   
+   # .........................................
+   def setParameter(self, parameterName, value):
+      """
+      @summary: Sets the algorithm parameter to the specified value
+      @param parameterName: The name of the parameter to set
+      @param value: The new value to set the parameter to
+      @note: Does not check to make sure the value is valid
+      """
+      for param in self.parameters:
+         if param.name.lower() == parameterName.lower():
+            param.value = value
+            return
+         
+      # If parameter not found, raise exception
+      raise Exception, "Parameter '%s' not found for this algorithm" \
+         % parameterName
+   
 # .............................................................................
 class SDMClient(object):
    """
