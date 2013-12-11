@@ -135,21 +135,23 @@ class _Client(object):
       self._login()
    
    # .........................................
-   def checkVersion(self):
+   def checkVersion(self, clientName="lmClientLib", verStr=None):
       """
       @summary: Checks the version of the client library against the versions
                    reported by the web server
+      @param clientName: (optional) Check this client if not the client library
+      @param verStr: (optional) The version string of the client to check
       @raise OutOfDateException: Raised if the client is out of date and 
                                     cannot continue
       """
       res = self.makeRequest(LM_CLIENT_VERSION_URL, objectify=True)
       for client in res:
-         if client.name == "lmClientLib":
+         if client.name == clientName:
             minVersionStr = client.versions.minimum
             curVersionStr = client.versions.current
             minVersion = self._getVersionNumbers(verStr=minVersionStr)
             curVersion = self._getVersionNumbers(verStr=curVersionStr)
-            myVersion = self._getVersionNumbers()
+            myVersion = self._getVersionNumbers(verStr=verStr)
             
             if myVersion < minVersion:
                raise OutOfDateException(myVersion, minVersion)
