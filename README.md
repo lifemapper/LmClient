@@ -11,6 +11,8 @@ Email: cjgrady@ku.edu
 
 Version: 2.1.2
 
+We acknowledge the support of grant BIO/EF #0851290 from the U.S. National Science Foundation for the production of this software.
+
 Purpose
 ========
    The Lifemapper client library is provided as a tool, written in Python, to
