@@ -1,10 +1,10 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 2.1.2
+@version: 2.1.3
 @status: release
 
-@license: Copyright (C) 2013, University of Kansas Center for Research
+@license: Copyright (C) 2014, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -894,7 +894,7 @@ class RADClient(object):
          p.append(("keyword", kw))
       url = "%s/services/rad/layers" % self.cl.server
       if filename is not None:
-         body = open(filename).read()
+         body = open(filename, 'rb').read()
          headers = {"Content-Type" : CONTENT_TYPES[dataFormat]}
       elif layerContent is not None:
          body = layerContent
@@ -972,7 +972,7 @@ class RADClient(object):
 
       if filename is not None:
          if filename.endswith('.zip'):
-            body = open(filename).read()
+            body = open(filename, 'rb').read()
          else:
             body = self.cl.getAutozipShapefileStream(filename)
          headers = {"Content-Type" : "application/x-gzip"}
@@ -1141,6 +1141,7 @@ class RADClient(object):
                 function used in other places.
       @note: This may be replaced in future versions
       @todo: Remove dummy function
+      @deprecated: This will be removed in version 2.2
       """
       stage = None
       status = None
@@ -1153,6 +1154,7 @@ class RADClient(object):
       @param experimentId: The id of the experiment containing the bucket
       @param bucketId: The id of the bucket to get the status of
       @deprecated: Replace by using getStatusStage on a bucket object
+      @note: Will be removed in version 2.2
       """
       return self.getStatusStage(self.getBucket(experimentId, bucketId))
    
@@ -1166,6 +1168,7 @@ class RADClient(object):
       @param intersected: (optional) If True, returns intersected layers in the
                              shapefile, else returns the shapgrid itself
       @deprecated: Replace with getBucketShapegridData
+      @note: Will be removed in version 2.2
       """
       return self.getBucketShapegridData(filePath, expId, bucketId, intersected=intersected)
    
@@ -1178,6 +1181,7 @@ class RADClient(object):
       @param pamSumId: The id of the pamsum to get statistics for
       @param stat: The key of the statistic to return
       @deprecated: Replace with getPamSumStatistic
+      @note: Will be removed in version 2.2
       """
       return self.getPamSumStatistic(expId, bucketId, pamSumId, stat)
 
@@ -1191,6 +1195,7 @@ class RADClient(object):
       @param keys: (optional) The type of keys to return
                                (keys | specieskeys | siteskeys | diversitykeys)
       @deprecated: Replace with getPamSumStatisticsKeys
+      @note: Will be removed in version 2.2
       """
       return self.getPamSumStatisticsKeys(expId, bucketId, pamSumId, keys=keys)
 
@@ -1202,6 +1207,7 @@ class RADClient(object):
       @param bucketId: The id of the bucket containing the pamsum
       @param pamsumId: The id of the pamsum to return the status of
       @deprecated: Replace by using getStatusStage on pamsum object
+      @note: Will be removed in version 2.2
       """
       return self.getStatusStage(self.getPamSum(experimentId, bucketId, pamsumId))
    
@@ -1215,6 +1221,7 @@ class RADClient(object):
                           bucket id is provided, all buckets in the experiment
                           will be intersected.
       @deprecated: Replace with intersectBucket
+      @note: Will be removed in version 2.2
       """
       return self.intersectBucket(expId, bucketId=bucketId)
 
@@ -1231,6 +1238,7 @@ class RADClient(object):
       @param bbox: The bounding box for the new bucket
       @param cutout: (optional) WKT representing the area to cut out
       @deprecated: Replace with postShapegrid
+      @note: Will be removed in version 2.2
       """
       return self.postShapegrid(shpName, cellShape, cellSize, mapUnits, 
                                                  epsgCode, bbox, cutout=cutout)
@@ -1244,6 +1252,7 @@ class RADClient(object):
       @param method: (optional) The randomization method to use (swap | splotch)
       @param iterations: (optional) The number of swap iterations to perform
       @deprecated: Replace with randomizeBucket
+      @note: Will be removed in version 2.2
       """
       return self.randomizeBucket(expId, bucketId, method=method, iterations=iterations)
 

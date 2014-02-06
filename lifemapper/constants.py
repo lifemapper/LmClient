@@ -1,10 +1,10 @@
 """
 @summary: Constants for the Lifemapper web service clients
 @author: CJ Grady
-@version: 2.1.2
+@version: 2.1.3
 @status: release
 
-@license: Copyright (C) 2013, University of Kansas Center for Research
+@license: Copyright (C) 2014, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -25,7 +25,6 @@
           Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 
           02110-1301, USA.
 """
-
 WEBSITE_ROOT = "http://lifemapper.org"
 LM_NAMESPACE = "http://lifemapper.org"
 LM_CLIENT_VERSION_URL = "http://lifemapper.org/clients/versions.xml"
@@ -39,6 +38,7 @@ SHAPEFILE_EXTENSIONS = ["shp", "shx", "dbf", "prj", "sbn",
                         "sbx", "fbn", "fbx", "ain", "aih", 
                         "ixs", "mxs", "atx", "cpg"]
 
+# .............................................................................
 class JobStage:
    GENERAL = 0
    # _RadIntersectJob contains RADExperiment 
@@ -52,6 +52,7 @@ class JobStage:
    # _RadCalculateJob contains original or random PamSum
    CALCULATE = 40
 
+# .............................................................................
 class JobStatus:
    GENERAL = 0
    INITIALIZE = 1

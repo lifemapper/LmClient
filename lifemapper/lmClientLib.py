@@ -3,10 +3,10 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 2.1.2
+@version: 2.1.3
 @status: release
 
-@license: Copyright (C) 2013, University of Kansas Center for Research
+@license: Copyright (C) 2014, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -114,7 +114,7 @@ class _Client(object):
    """
    @summary: Private Lifemapper client class
    """
-   __version__ = "2.1.2"
+   __version__ = "2.1.3"
 
    # .........................................
    def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):

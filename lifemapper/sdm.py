@@ -3,9 +3,9 @@
              Species Distribution Modeling services
 @author: CJ Grady
 @version: 2.1.3
-@status: beta
+@status: release
 
-@license: Copyright (C) 2013, University of Kansas Center for Research
+@license: Copyright (C) 2014, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -38,6 +38,7 @@
             Example for June 7, 2009 9:23:15 AM - 2009-06-07T09:23:15Z
 """
 from collections import namedtuple
+import json
 
 from constants import CONTENT_TYPES
 
@@ -548,7 +549,7 @@ class SDMClient(object):
          params.append(("keyword", kw))
          
       if fileName is not None:
-         body = open(fileName).read()
+         body = open(fileName, 'rb').read()
          headers={"Content-Type" : CONTENT_TYPES[dataFormat]}
       elif layerContent is not None:
          body = layerContent
@@ -730,7 +731,7 @@ class SDMClient(object):
       
       if fileType.lower() == "shapefile":
          if fileName.endswith('.zip'):
-            postBody = open(fileName).read()
+            postBody = open(fileName, 'rb').read()
          else:
             postBody = self.cl.getAutozipShapefileStream(fileName)
       else:
@@ -1166,7 +1167,7 @@ class SDMClient(object):
    # --------------------------------------------------------------------------
 
    # .........................................
-   def hint(self, query, maxReturned=20):
+   def hint(self, query, maxReturned=None):
       """
       @summary: Queries for occurrence sets that match the partial query string
       @param query: The partial string to match (genus species).  Must be at 
@@ -1178,19 +1179,29 @@ class SDMClient(object):
          raise Exception, "Please provide at least 3 characters to hint service"
       
       params = [
-                ("maxReturned", maxReturned)
+                ("maxReturned", maxReturned),
+                ("format", "json")
                ]
       url = "%s/hint/species/%s" % (self.cl.server, query)
       
       res = self.cl.makeRequest(url, method="get", parameters=params)
       
+      jObj = json.loads(res)
+      
+      try:
+         # Old json format
+         jsonItems = jObj.get('columns')[0]
+      except:
+         # New json format
+         jsonItems = jObj.get('hits')
+      
       items = []
-      for item in res.split('\n'):
-         comps = item.split("\t")
-         if len(comps) >= 3:
-            items.append(SearchHit(name=comps[0], 
-                                id=comps[1], 
-                                numPoints=comps[2]))
+      for item in jsonItems:
+         items.append(SearchHit(name=item.get('name'),
+                                id=int(item.get('occurrenceSet')),
+                                numPoints=int(item.get('numPoints'))))
+      if maxReturned is not None and maxReturned < len(items):
+         items = items[:maxReturned]
       return items
 
    # .........................................
