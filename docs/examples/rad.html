@@ -17,10 +17,9 @@
    <body>
       <h1>Lifemapper Range and Diversity (RAD) Module</h1>
       <p>
-         With this release of the Lifemapper client library, we have included
-         the Range and Diversity module for creating and exploring macroecology
-         experiments.  Below you will find a list of available functions in
-         this module.
+         The Lifemapper client library includes the Range and Diversity module
+         for macroecological experiments.  Below you will find a list of 
+         available functions in this module.
       </p>
       <hr />
       <!-- ............................................................... -->
@@ -30,6 +29,7 @@
             <ul>
                <li><a href="#countExperiments">countExperiments</a></li>
                <li><a href="#getExperiment">getExperiment</a></li>
+               <li><a href="#getExperimentLayerIndices">getExperimentLayerIndices</a></li>
                <li><a href="#listExperiments">listExperiments</a></li>
                <li><a href="#postExperiment">postExperiment</a></li>
                <li>
@@ -38,10 +38,13 @@
                      <li><a href="#countBuckets">countBuckets</a></li>
                      <li><a href="#getBucket">getBucket</a></li>
                      <li><a href="#getBucketShapegridData">getBucketShapegridData</a></li>
+                     <li><a href="#getBucketSitesPresent">getBucketSitesPresent</a></li>
                      <li><a href="#listBuckets">listBuckets</a></li>
                      <li><a href="#addBucket">addBucket</a></li>
+                     <li><a href="#addBucketByShapegridId">addBucketByShapegridId</a></li>
                      <li><a href="#intersectBucket">intersectBucket</a></li>
                      <li><a href="#randomizeBucket">randomizeBucket</a></li>
+                     <li><a href="#getOrginalPamCsv">getOriginalPamCsv</a></li>
                   </ul>
                </li>
                <li>
@@ -52,16 +55,22 @@
                   </ul>
                </li>
                <li>
+                  <a href="#ExperimentTrees">Trees</a>
+                  <ul>
+                     <li><a href="#addTreeForExperiment">addTreeForExperiment</a></li>
+                     <li><a href="#getTreeForExperiment">getTreeForExperiment</a></li>
+                  </ul>
+               </li>
+               <li>
                   <a href="#PamSums">PAM Sums</a>
                   <ul>
                      <li><a href="#countPamSums">countPamSums</a></li>
                      <li><a href="#getPamSum">getPamSum</a></li>
+                     <li><a href="#getPamSumCsv">getPamSumCsv</a></li>
                      <li><a href="#getPamSumShapegrid">getPamSumShapegrid</a></li>
                      <li><a href="#getPamSumStatistic">getPamSumStatistic</a></li>
                      <li><a href="#getPamSumStatisticsKeys">getPamSumStatisticsKeys</a></li>
                      <li><a href="#listPamSums">listPamSums</a></li>
-                     <li><a href="#calculatePamSumStatistics">calculatePamSumStatistics</a></li>
-                     <li><a href="#compressPamSum">compressPamSum</a></li>
                   </ul>
                </li>
             </ul>
@@ -82,29 +91,12 @@
                <li><a href="#countShapegrids">countShapegrids</a></li>
                <li><a href="#getShapegrid">getShapegrid</a></li>
                <li><a href="#listShapegrids">listShapegrids</a></li>
-               <li><a href="#postShapegrid">postShapegrid</a></li>
             </ul>
          </li>
          <li>
             <a href="#Other">Other Functions</a>
             <ul>
                <li><a href="#getStatusStage">getStatusStage</a></li>
-            </ul>
-         </li>
-         <li>
-            <a href="#Deprecated">Deprecated Functions</a>
-            <ul>
-               <li><a href="#calculate">calculate</a></li>
-               <li><a href="#compress">compress</a></li>
-               <li><a href="#dummyCallback">dummyCallback</a></li>
-               <li><a href="#getBucketStatus">getBucketStatus</a></li>
-               <li><a href="#getShapegridData">getShapegridData</a></li>
-               <li><a href="#getStatistic">getStatistic</a></li>
-               <li><a href="#getStatisticsKeys">getStatisticsKeys</a></li>
-               <li><a href="#getPamSumStatus">getPamSumStatus</a></li>
-               <li><a href="#intersect">intersect</a></li>
-               <li><a href="#postShapefile">postShapefile</a></li>
-               <li><a href="#randomize">randomize</a></li>
             </ul>
          </li>
       </ul>
@@ -145,6 +137,24 @@
             &gt;&gt;&gt; exp = cl.rad.getExperiment(12345)
             &gt;&gt;&gt; cl.close()
          </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getExperimentLayerIndices">Get Experiment Layer Indices</a></h3>
+      <p>
+         The "getExperimentLayerIndices" function retrieves the layer indices 
+         for an experiment as a Python pickle and saves it to the user's file 
+         system in the specified location.  The return value is a boolean 
+         indicating if the request was successful.<br />
+         <br />
+         Example: Get the layer indices for experiment 12345 and store them at
+         /tmp/exp12345lyrIndices.pkl
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.rad.getExperimentLayerIndices(12345, '/tmp/exp12345lyrIndices.pkl')
+            True
+            >>> cl.close()
+         </code> 
       </p>
 
       <!-- .......................... -->
@@ -236,6 +246,24 @@
       </p>
 
       <!-- .......................... -->
+      <h3><a id="getBucketSitesPresent">Get Bucket Sites Present</a></h3>
+      <p>
+         The "getBucketSitesPresent" function returns the sites present in the 
+         bucket's original PAM as a Python pickle.  This is used by the 
+         Lifemapper QGIS client.  The return value is a boolean indicating if
+         the request was successful.<br />
+         <br />
+         Example: Get the sites present for bucket 123 of experiment 987 and 
+         store the results at /tmp/exp987bkt123sitesPres.pkl
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.rad.getBucketSitesPresent('/tmp/exp987bkt123/sitesPres.pkl', 987, 123)
+            True
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
       <h3><a id="listBuckets">List Buckets</a></h3>
       <p>
          The "listBuckets" function returns a list of buckets that match the 
@@ -270,6 +298,22 @@
       </p>
 
       <!-- .......................... -->
+      <h3><a id="addBucketByShapegridId">Add Bucket by Shapegrid Id</a></h3>
+      <p>
+         The "addBucketByShapegridId" function adds a new bucket to an 
+         experiment using an existing shapegrid.  This would be used if you 
+         have created a bucket previously and wanted to re-use the shapegrid 
+         associated with it.<br />
+         <br />
+         Example: Add a new bucket to experiment 1234 using shapegrid 777
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> bkt = cl.rad.addBucketByShapegridId(1234, 777)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
       <h3><a id="intersectBucket">Intersect Bucket</a></h3>
       <p>
          The "intersectBucket" function performs an intersection of the cells
@@ -280,7 +324,7 @@
          Example: Request an intersection for bucket 123 of experiment 456
          <code>
             &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
-            &gt;&gt;&gt; cl.rad.intersectBucket(456, bucketId=123)
+            &gt;&gt;&gt; cl.rad.intersectBucket(456, 123)
             &gt;&gt;&gt; cl.close()
          </code>
       </p>
@@ -308,6 +352,26 @@
             &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
             &gt;&gt;&gt; cl.rad.randomizeBucket(456, 123, method='swap', iterations=10000)
             &gt;&gt;&gt; cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getOriginalPamCsv">Get Original PAM CSV</a></h3>
+      <p>
+         The "getOriginalPamCsv" function returns the original presence/absence 
+         matrix (PAM) for a bucket in CSV format.  If you choose to calculate
+         statistics on the PAM using other software, this is the file you would
+         use.  The content will be returned to you as a string that can be used
+         with Python's csv reader.  You can also give the function a file path
+         and the content will be saved to your file system.<br />
+         <br />
+         Example: Retrieve the PAM for experiment 123, bucket 456 with headers
+         for each column and site coordinates and save the output to 
+         /tmp/pam.csv.
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> csvContent = cl.rad.getOriginalPamCsv(123, 456, headers=True, filePath='/tmp/pam.csv')
+            >>> cl.close()
          </code>
       </p>
 
@@ -356,6 +420,52 @@
 
       <!-- ................................................................ -->
       <hr />
+      <h1><a id="ExperimentTrees">Experiment Phylogenetic Trees</a></h1>
+      <p>
+         Phylogenetic trees can be used to drive Lifemapper RAD experiments and 
+         if branch lengths are provided, additional statistics will be 
+         available.  Note, conversion tools are necessary to work with these 
+         trees and to convert existing trees into a format that can be ingested
+         by Lifemapper.  These tools are only available through the Lifemapper
+         QGIS plugin at this time.
+      </p>
+      
+      <!-- .......................... -->
+      <h3><a id="addTreeForExperiment">Add Tree For Experiment</a></h3>
+      <p>
+         The "addTreeForExperiment" function adds a tree for the experiment 
+         that will be used to drive an experiment and will be used for 
+         statistics calculations if it includes branch lengths.  A boolean 
+         value indicating if adding the tree was successful will be returned.  
+         Note, the tree must be in JSON format.<br />
+         <br />
+         Example: Add a tree found at /tmp/myTree.json to experiment 123
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.rad.addTreeForExperiment(123, filename='/tmp/myTree.json')
+            True
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <h3><a id="getTreeForExperiment">Get Tree For Experiment</a></h3>
+      <p>
+         The "getTreeForExperiment" function retrieves the experiment's tree.
+         The tree will be returned as a Python JSON object.  If the 'filename'
+         parameter is specified, the function will attempt to write the web 
+         service response to that location as well.<br />
+         <br />
+         Example: Retrieve the tree for experiment 333
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> jTree = cl.rad.getTreeForExperiment(333)
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- ................................................................ -->
+      <hr />
       <h1><a id="PamSums">PAM Sums</a></h1>
       <p>
          PAM Sums (Presence Absence Matrices and Summaries) are used to create
@@ -395,6 +505,26 @@
          </code>
       </p>
       
+      <!-- .......................... -->
+      <h3><a id="getPamSumCsv">Get Random PAM SUM CSV</a></h3>
+      <p>
+         The "getPamSumCsv" function returns a randomized presence/absence 
+         matrix (PAM) for a bucket in CSV format.  If you choose to calculate
+         statistics on the PAM using other software, this is the file you would
+         use.  The content will be returned to you as a string that can be used
+         with Python's csv reader.  You can also give the function a file path
+         and the content will be saved to your file system.<br />
+         <br />
+         Example: Retrieve the PAM 999 for experiment 123, bucket 456 with 
+         headers for each column and site coordinates and save the output to 
+         /tmp/pam999.csv.
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> csvContent = cl.rad.getPamSumCsv(123, 456, 999, headers=True, filePath='/tmp/pam999.csv')
+            >>> cl.close()
+         </code>
+      </p>
+
       <!-- .......................... -->
       <h3><a id="getPamSumShapegrid">Get PAM Sum Shape Grid</a></h3>
       <p>
@@ -459,37 +589,6 @@
          <code>
             &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
             &gt;&gt;&gt; pss = cl.rad.listPamSums(456, 123, randomized=1, randomMethod=1)
-            &gt;&gt;&gt; cl.close()
-         </code>
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="calculatePamSumStatistics">Calculate PAM Sum Statistics</a></h3>
-      <p>
-         The "calculatePamSumStatistics" function tells the server that it 
-         should calculate statistics for the specified PAM Sum
-         <br />
-         <br />
-         Example: Request the statistics for PAM Sum 123 of bucket 456 of 
-         experiment 789 to be calculated
-         <code>
-            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
-            &gt;&gt;&gt; cl.rad.calculatePamSumStatistics(789, 456, 123)
-            &gt;&gt;&gt; cl.close()
-         </code>
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="compressPamSum">Compress PAM Sum</a></h3>
-      <p>
-         The "compressPamSum" function requests that a PAM Sum be compressed
-         by removing empty rows and columns
-         <br />
-         <br />
-         Example: Compress PAM Sum 123 of bucket 456 of experiment 789
-         <code>
-            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
-            &gt;&gt;&gt; cl.rad.compressPamSum(789, 456, 123)
             &gt;&gt;&gt; cl.close()
          </code>
       </p>
@@ -646,24 +745,6 @@
          </code>
       </p>
 
-      <!-- .......................... -->
-      <h3><a id="postShapegrid">Post Shape Grid</a></h3>
-      <p>
-         The "postShapegrid" function creates a new shape grid layer in the
-         Lifemapper system.  It takes parameters to specify the extent, cell
-         shape and size, map projection, and even a mask if desired.
-         <br />
-         <br />
-         Example: Create a shapegrid with the name 'MyShapeGrid' with square
-         cells that are 1 decimal degree in length / width in the geographic
-         coordinate system (EPSG 4326) and global extent
-         <code>
-            &gt;&gt;&gt; cl = LMClient(userId='someUser', pwd='somePassword')
-            &gt;&gt;&gt; sg = cl.rad.postShapegrid('MyShapeGrid', 'square', 1, 'dd', 4326, '-180,-90,180,90')
-            &gt;&gt;&gt; cl.close()
-         </code>
-      </p>
-
       <!-- ................................................................ -->
       <hr />
       <h1><a id="Other">Other Functions</a></h1>
@@ -697,141 +778,5 @@
          </code>
       </p>
 
-      <!-- ................................................................ -->
-      <hr />
-      <h1><a id="Deprecated">Deprecated Functions</a></h1>
-      <p>
-         These functions have been deprecated and will be removed in future 
-         versions of the client.  They still work for this version but code 
-         should be migrated to prevent problems when updating later.
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="calculate">Calculate</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name
-         <br />
-         <b>Replace with:</b>
-         <a href="#calculatePamSumStatistics">calculatePamSumStatistics</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="compress">Compress</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name
-         <br />
-         <b>Replace with:</b>
-         <a href="#compressPamSum">compressPamSum</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="dummyCallback">Dummy Callback</a></h3>
-      <p>
-         <b>Reason:</b>
-         Temporary function
-         <br />
-         <b>Replace with:</b>
-         To be determined, this shouldn't be called directly
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="getShapegridData">Get Shape Grid Data</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name.  This function returns data for a shapegrid attached
-         to a bucket.
-         <br />
-         <b>Replace with:</b>
-         <a href="#getBucketShapegridData">getBucketShapegridData</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="getBucketStatus">Get Bucket Status</a></h3>
-      <p>
-         <b>Reason:</b>
-         Duplicates code
-         <br />
-         <b>Replace with:</b>
-         First, get the bucket with <a href="#getBucket">getBucket</a>, then 
-         pass that object as an argument to <a href="#getStatusStage">
-         getStatusStage</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="getStatistic">Get Statistic</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name
-         <br />
-         <b>Replace with:</b>
-         <a href="#getPamSumStatistic">getPamSumStatistic</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="getStatisticsKeys">Get Statistics Keys</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name
-         <br />
-         <b>Replace with:</b>
-         <a href="#getPamSumStatistic">getPamSumStatisticsKeys</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="getPamSumStatus">Get Pam Sum Status</a></h3>
-      <p>
-         <b>Reason:</b>
-         Duplicates code
-         <br />
-         <b>Replace with:</b>
-         First, get the pamsum with <a href="#getPamSum">getPamSum</a>, then
-         pass that object as an argument to <a href="#getStatusStage">
-         getStatusStage</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="intersect">Intersect</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name
-         <br />
-         <b>Replace with:</b>
-         <a href="#intersectBucket">intersectBucket</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="postShapefile">Post Shapefile</a></h3>
-      <p>
-         <b>Reason:</b>
-         Misleading name.  This function actually creates a new shape grid.
-         Instead of posting a shapefile.  If you want to post a shapefile 
-         layer, use <a href="#postVector">postVector</a>
-         <br />
-         <b>Replace with:</b>
-         <a href="#postShapegrid">postShapegrid</a>
-         <br />
-      </p>
-
-      <!-- .......................... -->
-      <h3><a id="randomize">Randomize</a></h3>
-      <p>
-         <b>Reason:</b>
-         Ambiguous name
-         <br />
-         <b>Replace with:</b>
-         <a href="#randomizeBucket">randomizeBucket</a>
-         <br />
-      </p>
    </body>
 </html>

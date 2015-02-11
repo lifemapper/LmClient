@@ -1,0 +1,65 @@
+<html>
+   <head>
+      <title>OTL Module Documentation</title>
+      <style type="text/css">
+         code
+         {
+            background-color: #f8f8f8;
+            border: solid 1px #000000;
+            color: #000000;
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            white-space: pre-line;
+         }
+      </style>
+   </head>
+   <body>
+      <h1>Lifemapper Open Tree of Life (OTL) Module</h1>
+      <p>
+         With this release, we have added a module that can be used to 
+         integrate Open Tree of Life (
+         <a href="http://blog.opentreeoflife.org">http://blog.opentreeoflife.org</a>
+         ) services with Lifemapper services.
+      </p>
+      <hr />
+      <!-- ............................................................... -->
+      <ul>
+         <li><a href="#getOTLHint">getOTLHint</a></li>
+         <li><a href="#getOTLTreeWeb">getOTLTreeWeb</a></li>
+      </ul>
+
+      <!-- ................................................................ -->
+      <hr />
+      <!-- .......................... -->
+      <h3><a id="getOTLHint">Get Open Tree of Life Hint</a></h3>
+      <p>
+         The "getOTLHint" function calls the Open Tree of Life hint service and
+         returns a list of matching Open Tree of Life tree identifiers for the 
+         provided taxa name.<br />
+         <br />
+         Example: Find the matching OTL tree ids for 'Acer'
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> treeIds = cl.otl.getOTLHint('Acer')
+            >>> cl.close()
+         </code>
+      </p>
+
+      <!-- .......................... -->
+      <h3><a id="getOTLTreeWeb">Get Open Tree of Life Tree</a></h3>
+      <p>
+         The "getOTLTreeWeb" function allows you to retrieve an Open Tree of 
+         Life tree (in Newick format) from an Open Tree of Life tree 
+         identifier.  Note, this must be converted to JSON before it can be 
+         used with the Lifemapper RAD services.
+         <br /><br />
+         Example: Get OTL tree 12345
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> otlTree = cl.otl.getOTLTreeWeb(12345)
+            >>> cl.close()
+         </code>
+      </p>
+   </body>
+</html>

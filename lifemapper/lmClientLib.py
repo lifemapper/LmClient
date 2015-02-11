@@ -3,10 +3,10 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 2.1.3
+@version: 3.0.1
 @status: release
 
-@license: Copyright (C) 2014, University of Kansas Center for Research
+@license: Copyright (C) 2015, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -49,14 +49,18 @@ from types import ListType
 import urllib
 import urllib2
 import warnings
-import xml.etree.ElementTree as ET
 import zipfile
 
 
-from constants import DEFAULT_POST_USER, DEFAULT_USER, LM_CLIENT_VERSION_URL, \
-                      SHAPEFILE_EXTENSIONS, WEBSITE_ROOT
-from sdm import SDMClient
-from rad import RADClient
+from LmClient.constants import LM_CLIENT_VERSION_URL
+from LmClient.openTree import OTLClient
+from LmClient.rad import RADClient
+from LmClient.sdm import SDMClient
+
+from LmCommon.common.lmconstants import DEFAULT_POST_USER, SHAPEFILE_EXTENSIONS
+from LmCommon.common.localconstants import ARCHIVE_USER, WEBSITE_ROOT
+from LmCommon.common.lmXml import deserialize, fromstring
+from LmCommon.common.unicode import toUnicode
 
 # .............................................................................
 class OutOfDateException(Exception):
@@ -99,22 +103,32 @@ class LMClient(object):
       self._cl = _Client(userId=userId, pwd=pwd, server=server)
       self._cl.checkVersion()
       self.sdm = SDMClient(self._cl)
-      if userId not in [DEFAULT_POST_USER, DEFAULT_USER]:
+      if userId not in [DEFAULT_POST_USER, ARCHIVE_USER]:
          self.rad = RADClient(self._cl)
+         self.otl = OTLClient(self._cl)
    
+   # .........................................
+   def __del__(self):
+      """
+      @summary: Destructor.  Logs out for cleanup
+      """
+      self._cl.logout()
+      
    # .........................................
    def logout(self):
       """
       @summary: Log out of a session
+      @deprecated: Will be performed on object deletion
       """
       self._cl.logout()
+      self._cl = None
 
 # .............................................................................
 class _Client(object):
    """
    @summary: Private Lifemapper client class
    """
-   __version__ = "2.1.3"
+   __version__ = "3.0.1"
 
    # .........................................
    def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):
@@ -202,7 +216,7 @@ class _Client(object):
       files = []
       if fn.endswith('.shp'):
          for f in glob.iglob("%s*" % fn.strip('shp')):
-            ext = f.split('.')[-1]
+            ext = os.path.splitext(f)[1]
             if ext in SHAPEFILE_EXTENSIONS:
                files.append(f)
       else:
@@ -272,12 +286,20 @@ class _Client(object):
       else:
          url = "%s?%s" % (url, urlparams)
       req = urllib2.Request(url, data=body, headers=headers)
-      ret = urllib2.urlopen(req)
-      resp = ''.join(ret.readlines())
-      if objectify:
-         return self.objectify(resp)
+      req.add_header('User-Agent', 'LMClient/%s (Lifemapper Python Client Library; http://lifemapper.org; lifemapper@ku.edu)' % self.__version__)
+      try:
+         ret = urllib2.urlopen(req)
+      except urllib2.HTTPError, e:
+         #print e.headers['Error-Message']
+         raise e
+      except Exception, e:
+         raise Exception( 'Error returning from request to %s (%s)' % (url, toUnicode(e)))
       else:
-         return resp
+         resp = ''.join(ret.readlines())
+         if objectify:
+            return self.objectify(resp)
+         else:
+            return resp
 
    # .........................................
    def objectify(self, xmlString):
@@ -287,7 +309,7 @@ class _Client(object):
       @note: Uses LmAttList and LmAttObj
       @note: Object attributes are defined on the fly
       """
-      return deserialize(ET.fromstring(xmlString))   
+      return deserialize(fromstring(xmlString))   
 
    # .........................................
    def _login(self):
@@ -295,7 +317,7 @@ class _Client(object):
       @summary: Attempts to log a user in
       @todo: Handle login failures
       """
-      if self.userId != DEFAULT_POST_USER and self.userId != DEFAULT_USER and \
+      if self.userId != DEFAULT_POST_USER and self.userId != ARCHIVE_USER and \
                         self.pwd is not None:
          url = "%s/login" % self.server
          
@@ -311,147 +333,9 @@ class _Client(object):
       url = '/'.join((self.server, "logout"))
       self.makeRequest(url)
 
-# .............................................................................
-class LmAttObj(object):
-   """
-   @summary: Object that includes attributes.  Compare this to the attributes
-                attached to XML elements and the object members would be the
-                sub-elements of the element.
-   @note: <someElement att1="value1" att2="value2">\n
-             <subEl1>1</subEl1>\n
-             <subEl2>banana</subEl2>\n
-          </someElement>\n\n
-          translates to:\n\n
-          obj.subEl1 = 1\n
-          obj.subEl2 = 'banana'\n
-          obj.getAttributes() = {'att1': 'value1', 'att2': 'value2'}\n
-          obj.att1 = 'value1'\n
-          obj.att2 = 'value2'
-   """
-   # ......................................
-   def __init__(self, attribs={}, name="LmObj"):
-      """
-      @summary: Constructor
-      @param attribs: (optional) Dictionary of attributes to attach to the 
-                         object
-      @param name: (optional) The name of the object (useful for serialization)
-      """
-      self.__name__ = name
-      self._attribs = attribs
-   
-   # ......................................
-   def __getattr__(self, name):
-      """
-      @summary: Called if the default getattribute method fails.  This will 
-                   attempt to return the value from the attribute dictionary
-      @param name: The name of the attribute to return
-      @note: A deepcopy or similar call to a built-in method will probably 
-                cause problems
-      @return: The value of the attribute
-      """
-      return self._attribs[name]
-
-   # ......................................
-   def getAttributes(self):
-      """
-      @summary: Gets the dictionary of attributes attached to the object
-      @return: The attribute dictionary
-      @rtype: Dictionary
-      """
-      return self._attribs
-   
-   # ......................................
-   def setAttribute(self, name, value):
-      """
-      @summary: Sets the value of an attribute in the attribute dictionary
-      @param name: The name of the attribute to set
-      @param value: The new value for the attribute
-      """
-      self._attribs[name] = value
-
-# .............................................................................
-class LmAttList(list, LmAttObj):
-   """
-   @summary: Extension to lists that adds attributes
-   @note: obj = LmAttList([1, 2, 3], {'id': 'attList'})
-          print obj[0] >>  1
-          obj.append('apple')
-          print obj >> [1, 2, 3, 'apple']
-          print obj.id >> 'attList'
-   """
-   def __init__(self, items=[], attribs={}, name="LmList"):
-      """
-      @summary: Constructor
-      @param items: (optional) A list of initial values for the list
-      @param attribs: (optional) Dictionary of attributes to attach to the list
-      @param name: (optional) The name of the object (useful for serialization) 
-      """
-      LmAttObj.__init__(self, attribs, name)
-      for item in items:
-         self.append(item)
-   
 # =============================================================================
 # =                             Helper Functions                              =
 # =============================================================================
-# .............................................................................
-def deserialize(element, removeNS=True):
-   """
-   @summary: Deserializes an ElementTree (Sub)Element into an object
-   @param element: The element to deserialize
-   @param removeNS: (optional) If true, removes the namespaces from the tags
-   @return: A new object
-   """
-   # If removeNS is set to true, look for namespaces in the tag and remove them
-   #    They are enclosed in curly braces {namespace}tag
-   if removeNS:
-      processTag = lambda s: s.split("}")[1] if s.find("}") >= 0 else s
-   else:
-      processTag = lambda s: s
-   
-   # If the element has no children, just get the text   
-   if len(list(element)) == 0 and len(element.attrib.keys()) == 0:
-      try:
-         val = element.text.strip()
-         if len(val) > 0:
-            return val
-         else:
-            return None
-      except:
-         return None
-   else:
-      attribs = dict([(processTag(key), element.attrib[key]) for key in element.attrib.keys()])
-      obj = LmAttObj(attribs=attribs, name=processTag(element.tag))
-
-      try:
-         val = element.text.strip()
-         if len(val) > 0:
-            obj.value = val
-      except:
-         pass
-      
-      # Get a list of all of the element's children's tags
-      # If they are all the same type and match the parent, make one list
-      tags = [child.tag for child in list(element)]
-      reducedTags = list(set(tags))
-      
-      if len(reducedTags) == 1 and reducedTags[0] == element.tag[:-1]: # or len(tags) > 1):
-         obj = LmAttList([], attribs=attribs, name=processTag(element.tag))
-         for child in list(element):
-            obj.append(deserialize(child, removeNS))
-      else:
-         # Process the children
-         for child in list(element):
-            if hasattr(obj, processTag(child.tag)):
-               tmp = obj.__getattribute__(processTag(child.tag))
-               if isinstance(tmp, ListType):
-                  tmp.append(deserialize(child, removeNS))
-               else:
-                  tmp = LmAttList([tmp, deserialize(child, removeNS)], name=processTag(child.tag)+'s')
-               setattr(obj, processTag(child.tag), tmp)
-            else:
-               setattr(obj, processTag(child.tag), deserialize(child, removeNS))
-      return obj
-
 # .............................................................................
 def removeNonesFromTupleList(paramsList):
    """
@@ -475,4 +359,4 @@ def stringifyError(err):
    try:
       return err.hdrs['Error-Message']
    except:
-      return str(err)
+      return toUnicode(err)

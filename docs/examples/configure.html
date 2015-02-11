@@ -1,0 +1,111 @@
+<html>
+   <head>
+      <title>OTL Module Documentation</title>
+      <style type="text/css">
+         code
+         {
+            background-color: #f8f8f8;
+            border: solid 1px #000000;
+            color: #000000;
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            white-space: pre-line;
+         }
+      </style>
+   </head>
+   <body>
+      <h1>Configuring the Lifemapper Client Library</h1>
+      <p>
+         Version 3.0.1 of the Lifemapper client library includes configuration 
+         options.  These options are not applicable for most users but they are 
+         useful for those users that have their own Lifemapper server 
+         installation or wish to use an installation other than the main 
+         Lifemapper web services. 
+      </p>
+      <hr />
+      <!-- ............................................................... -->
+      <h2><a id="simple">Simple Configuration</a></h2>
+      
+      <p>
+         For most installations, the default options are fine.  To configure 
+         the Lifemapper Client Library, you will only need to copy the example
+         configuration file and set an environment variable to point at it. 
+         The exact procedure is depends on your platform but it has two steps:
+         <ol>
+            <li>Copy example-config.ini into a path you can access</li>
+            <li>
+               Set the environment variable "LIFEMAPPER_CONFIG_FILE" and have
+               it point at the location of this file.
+            </li>
+         </ol>
+         Note, this variable will need to be set whenever you wish to use the 
+         client library so it would be useful to include it in your user 
+         initialization (such as .bash_rc for Linux).
+      </p>
+      
+      <hr />
+      <!-- ............................................................... -->
+      <h2><a id="advanced">Advanced Configuration</a></h2>
+      
+      <p>
+         If you need to modify the configuration file to point at a different 
+         installation of the Lifemapper web services, you will start by 
+         following the steps of the <a href="#simple">simple configuration</a>.
+         Then, open the file and edit the values as necessary, the 
+         configuration options and their descriptions are listed below.
+      </p>
+      
+      <!-- ..................... -->
+      <hr />
+      <h3>[LmCommon - common] section</h3>
+      <p>
+         <b>ARCHIVE_USER</b> - This is the default user for the Lifemapper web
+         services.  You should only change this if you have your own Lifemapper
+         Server installation that has a different default user.
+      </p>
+
+      <p>
+         <b>CONCURRENT_PROCESSES</b> - This parameter is not used with version
+         3.0.1 of the client library, but if you choose to take advantage of 
+         the SubprocessManager class in LmCommon, you may find it useful.  This
+         parameter controls how many concurrent processes Lifemapper will use
+         when using subprocesses.
+      </p>
+
+      <p>
+         <b>ENCODING</b> - This is the default encoding to use when working 
+         with the Lifemapper Client Library.  The default is UTF-8 and that is
+         probably fine for most users.
+      </p>
+      
+      <p>
+         <b>OGC_SERVICE_URL</b> - This is the base URL for Lifemapper OGC map
+         outputs.  This should only be changed if you are using a different 
+         Lifemapper Server installation.
+      </p>
+      
+      <p>
+         <b>WEBSITE_ROOT</b> - This is the base URL for Lifemappwer web 
+         services.  This should only be changed if you are using a different 
+         Lifemapper Server installation.
+      </p>
+
+      <!-- ..................... -->
+      <hr />
+      <h3>[LmClient - Open Tree of Life] section</h3>
+      
+      <p>
+         <b>OTL_HINT_URL</b> - This parameter sets the base URL for the Open
+         Tree of Life hint service.  This parameter should only be changed if 
+         the OTL project changes the URL for this service.
+      </p>
+
+      <p>
+         <b>OTL_TREE_WEB_URL</b> - This parameter sets the base URL for the 
+         Open Tree of Life tree retrieval service.  This parameter should only
+         be changed if the OTL project changes the URL for this service.
+      </p>
+      
+   </body>
+</html>

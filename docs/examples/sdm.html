@@ -40,6 +40,7 @@
             <ul>
                <li><a href="#countLayers">countLayers</a></li>
                <li><a href="#getLayer">getLayer</a></li>
+               <li><a href="#getLayerKML">getLayerKML</a></li>
                <li><a href="#getLayerTiff">getLayerTiff</a></li>
                <li><a href="#listLayers">listLayers</a></li>
                <li><a href="#postLayer">postLayer</a></li>
@@ -50,6 +51,7 @@
             <ul>
                <li><a href="#countOccurrenceSets">countOccurrenceSets</a></li>
                <li><a href="#getOccurrenceSet">getOccurrenceSet</a></li>
+               <li><a href='#getOccurrenceSetKML">getOccurrenceSetKML</a></li>
                <li><a href="#getOccurrenceSetShapefile">getOccurrenceSetShapefile</a></li>
                <li><a href="#listOccurrenceSets">listOccurrenceSets</a></li>
                <li><a href="#postOccurrenceSet">postOccurrenceSet</a></li>
@@ -60,7 +62,9 @@
             <ul>
                <li><a href="#countProjections">countProjections</a></li>
                <li><a href="#getProjection">getProjection</a></li>
+               <li><a href="#getProjectionKML">getProjectionKML</a></li>
                <li><a href="#getProjectionTiff">getProjectionTiff</a></li>
+               <li><a href="#getProjectionUrl">getProjectionUrl</a></li>
                <li><a href="#listProjections">listProjections</a></li>
             </ul>
          </li>
@@ -234,6 +238,23 @@
       </p>
 
       <!-- .......................... -->
+      <a id="getLayerKML"><h3>Get Layer KML</h3></a>
+      <p>
+         The "getLayerKML" function gets a KML file for the layer that can be
+         opened with another application.  If you give this function a 
+         filename, it will save the data to your file system.  If you want to 
+         do something with the response first, you can omit the filename and 
+         the function will return the KML to you as a string.<br />
+         <br />
+         Example: Get layer 12345 KML and save it to /tmp/layer12345.kml
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.getLayerKML(12345, filename='/tmp/layer12345.kml')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
       <a id="getLayerTiff"><h3>Get Layer Tiff</h3></a>
       <p>
          The "getLayerTiff" function gets the layer's raster data in GeoTiff 
@@ -334,6 +355,23 @@
          </code>
       </p>
 
+      <!-- .......................... -->
+      <a id="getOccurrenceSetKML"><h3>Get Occurrence Set KML</h3></a>
+      <p>
+         The "getOccurrenceSetKML" function retrieves a KML file containing 
+         the points in the occurrence set.  If you give this function a 
+         filename, it will save the data to your file system.  If you want to 
+         do something with the data first, you can omit the filename and the 
+         function will return the content to you as a string.<br />
+         <br />
+         Example: Get occurrence set 12345 KML and save it to /tmp/occ12345.kml
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.getOccurrenceSetKML(12345, filename='/tmp/occ12345.kml')
+            >>> cl.close()
+         </code>
+      </p>
+      
       <!-- .......................... -->
       <a id="getOccurrenceSetShapefile"><h3>Get Occurrence Set Shapefile</h3></a>
       <p>
@@ -436,6 +474,23 @@
       </p>
 
       <!-- .......................... -->
+      <a id="getProjectionKML"><h3>Get Projection KML</h3></a>
+      <p>
+         The "getProjectionKML" function gets a KML file for the projection 
+         that can be opened with another application.  If you give this 
+         function a filename, it will save the data to your file system.  If 
+         you want to do something with the response first, you can omit the 
+         filename and the function will return the KML to you as a string.<br />
+         <br />
+         Example: Get projection 12345 KML and save it to /tmp/prj12345.kml
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> cl.sdm.getProjectionKML(12345, filename='/tmp/prj12345.kml')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
       <a id="getProjectionTiff"><h3>Get Projection Tiff</h3></a>
       <p>
          The "getProjectionTiff" function gets the projection's raster data in 
@@ -448,6 +503,26 @@
          <code>
             >>> cl = LMClient(userId='someUser', pwd='somePassword')
             >>> cl.sdm.getProjectionTiff(12345, filename='/tmp/prj12345.tif')
+            >>> cl.close()
+         </code>
+      </p>
+      
+      <!-- .......................... -->
+      <a id="getProjectionUrl"><h3>Get Projection Url</h3></a>
+      <p>
+         The "getProjectionUrl" function returns a URL that can be used to 
+         access a projection transformed into the specified format.  The format 
+         parameter is optional and the default interface will be returned. 
+         Omitting the 'frmt' parameter is not recommended as the default 
+         interface may change.<br />
+         <br />
+         Example: Get projection 12345 as an ASCII grid and save it to 
+         /tmp/prj12345.asc
+         <code>
+            >>> cl = LMClient(userId='someUser', pwd='somePassword')
+            >>> with open('/tmp/prj12345.asc', 'w') as outF:
+            >>>    asciiUrl = cl.sdm.getProjectionUrl(12345, frmt='AAIGrid')
+            >>>    outF.write(urllib2.urlopen(asciiUrl).read())
             >>> cl.close()
          </code>
       </p>

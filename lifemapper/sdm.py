@@ -2,10 +2,10 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 2.1.3
+@version: 3.0.1
 @status: release
 
-@license: Copyright (C) 2014, University of Kansas Center for Research
+@license: Copyright (C) 2015, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -40,7 +40,7 @@
 from collections import namedtuple
 import json
 
-from constants import CONTENT_TYPES
+from LmClient.constants import CONTENT_TYPES
 
 # .............................................................................
 class AlgorithmParameter(object):
@@ -173,7 +173,7 @@ class SDMClient(object):
       if alg is not None:
          a = Algorithm(alg)
       else:
-         raise Exception("Algorithm code: %s was not recognized" % str(code))
+         raise Exception("Algorithm code: %s was not recognized" % code)
       return a
    
    # --------------------------------------------------------------------------
@@ -1142,7 +1142,7 @@ class SDMClient(object):
       return items
    
    # .........................................
-   def postTypeCode(self, code, title=None, description=None):
+   def postTypeCode(self, code, title=None, description=None, keywords=[]):
       """
       @summary: Posts a new type code to the Lifemapper web services
       @param code: The code to use for this new type code [string]
@@ -1156,6 +1156,8 @@ class SDMClient(object):
                 ("title", title),
                 ("description", description)
                ]
+      for kw in keywords:
+         params.append(("keyword", kw))
       url = "%s/services/sdm/typecodes" % self.cl.server
       obj = self.cl.makeRequest(url, 
                                 method="post", 

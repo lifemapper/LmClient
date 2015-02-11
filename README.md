@@ -9,7 +9,7 @@ Author: CJ Grady
 
 Email: cjgrady@ku.edu
 
-Version: 2.1.3
+Version: 3.0.1
 
 We acknowledge the support of grant BIO/EF #0851290 from the U.S. National Science Foundation for the production of this software.
 
@@ -21,5 +21,15 @@ documentation can be found at: http://lifemapper.org/schemas/services.wadl
 
 Dependencies
 ========
-   Tested with Python 2.7
+- Requireds LmCommon - https://github.com/lifemapper/LmCommon
+- Tested with Python 2.7
    
+Configuration
+========
+   Once the Lifemapper client library code has been installed, it must be 
+   configured.  
+
+To configure the Lifemapper client library: 
+- Copy the example-config.ini file to a location that you can edit.
+- (If necessary) Edit your configuration file as needed to represent your environment.
+- Set the environment variable 'LIFEMAPPER_CONFIG_FILE' to point at the location of your configuration file.
