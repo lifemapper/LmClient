@@ -2,8 +2,8 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 3.0.1
-@status: release
+@version: 3.0.2
+@status: beta
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
 
@@ -235,6 +235,20 @@ class SDMClient(object):
       obj = self.cl.makeRequest(url, method="GET", objectify=True).experiment
       return obj
     
+   # .........................................
+   def getExperimentPackage(self, expId, filename):
+      """
+      @summary: Gets the package of output for a Lifemapper SDM experiment
+      @param expId: The id of the experiment to be returned. [integer]
+      @return: True if the write was successful
+      """
+      url = "%s/services/sdm/experiments/%s/package" % (self.cl.server, expId)
+      cnt = self.cl.makeRequest(url, method="GET")
+      f = open(filename, 'wb')
+      f.write(cnt)
+      f.close()
+      return True
+       
    # .........................................
    def listExperiments(self, afterTime=None, beforeTime=None, displayName=None, 
                              epsgCode=None, perPage=100, page=0, 
