@@ -44,5 +44,6 @@ setup(name="Lifemapper_Client",
       url="http://lifemapper.org",
       license="gpl",
       long_description=longDesc,
-      packages=find_packages()
+      package_dir = {'':'src'},
+      packages=find_packages('src')
      )

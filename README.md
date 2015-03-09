@@ -21,7 +21,7 @@ documentation can be found at: http://lifemapper.org/schemas/services.wadl
 
 Dependencies
 ========
-- Requireds LmCommon - https://github.com/lifemapper/LmCommon
+- Requires LmCommon - https://github.com/lifemapper/LmCommon
 - Tested with Python 2.7
    
 Configuration
