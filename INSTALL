@@ -1,0 +1,29 @@
+LmCommon
+========
+
+This repository contains code that is shared among Lifemapper components.
+
+We acknowledge the support of grant BIO/EF #0851290 from the U.S. National Science Foundation for the production of this software.
+
+-----
+
+Configuration
+=============
+Set an environment variable, $LIFEMAPPER_CONFIG_FILE, that points to your 
+configuration file.  Some default configuration files are provided with the 
+other components.  Edit those files to match your environment.
+
+
+
+Installation
+============
+The Lifemapper Client Library (LmClient) can be installed using setuptools.  It
+has been tested with Python 2.7 and requires 
+LmCommon (https://github.com/lifemapper/LmCommon).  You can install it by 
+unzipping the package and using the standard build and install 
+(https://docs.python.org/2/install/#standard-build-and-install).
+
+`
+python setup.py build
+python setup.py install
+`
