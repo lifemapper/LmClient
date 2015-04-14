@@ -184,26 +184,6 @@ class RADClient(object):
       return obj
    
    # .........................................
-   def getPamCsv(self, experimentId, bucketId, headers=False, filePath=None):
-      """
-      @summary: Get one of an experiment's buckets' pam
-      @param experimentId: The experiment containing buckets
-      @param bucketId: The bucket to return
-      @param headers: (optional) Add column headers and centroids to response
-      @note: Will probably change in release
-      """
-      url = "%s/services/rad/experiments/%s/buckets/%s/csv%s" % (self.cl.server, 
-                                                        experimentId, bucketId,
-                                                        "?addHeaders=1" if headers else "")
-      cnt = self.cl.makeRequest(url, method="GET")
-      if filePath is not None:
-         try:
-            open(filePath, 'w').write(cnt)
-         except Exception, _:
-            return False
-      return cnt
-   
-   # .........................................
    def getBucketShapegridData(self, filePath, expId, bucketId, intersected=False):
       """
       @summary: Gets a bucket's shapegrid as a shapefile
@@ -415,7 +395,7 @@ class RADClient(object):
                                 headers={"Content-Type" : "application/xml"},
                                 objectify=True)
       if obj.Status.ProcessAccepted is not None:
-            return lambda : self.getBucketStatus(expId, bucketId)
+            return lambda : self.getStatusStage(self.getBucket(expId, bucketId))
       else:
          return False
 
@@ -473,9 +453,29 @@ class RADClient(object):
                                 headers={"Content-Type" : "application/xml"},
                                 objectify=True)
       if obj.Status.ProcessAccepted is not None:
-         return lambda : self.getBucketStatus(expId, bucketId)
+         return lambda : self.getStatusStage(self.getBucket(expId, bucketId))
       else:
          return False
+   
+   # .........................................
+   def getOriginalPamCsv(self, experimentId, bucketId, headers=False, filePath=None):
+      """
+      @summary: Get the experiment's bucket's orginal pam in CSV format
+      @param experimentId: The experiment containing buckets
+      @param bucketId: The bucket to return
+      @param headers: (optional) Add column headers and centroids to response
+      @note: Will probably change in release
+      """
+      url = "%s/services/rad/experiments/%s/buckets/%s/csv%s" % (self.cl.server, 
+                                                        experimentId, bucketId,
+                                                        "?addHeaders=1" if headers else "")
+      cnt = self.cl.makeRequest(url, method="GET")
+      if filePath is not None:
+         try:
+            open(filePath, 'w').write(cnt)
+         except Exception, _:
+            return False
+      return cnt
    
    # Ancillary Layers
    # -----------------
@@ -767,6 +767,19 @@ class RADClient(object):
                                               ("randomMethod", randomMethod)])
 
    # .........................................
+   def getPamSum(self, expId, bucketId, pamSumId):
+      """
+      @summary: Returns a pamsum
+      @param expId: The id of the experiment container
+      @param bucketId: The id of the bucket containing the pamsum
+      @param pamSumId: The id of the pamsum to return
+      """
+      url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/%s" % \
+               (self.cl.server, expId, bucketId, pamSumId)
+      obj = self.cl.makeRequest(url, method="GET", objectify=True).pamsum
+      return obj
+   
+   # .........................................
    def getPamSumCsv(self, expId, bucketId, pamSumId, headers=False, filePath=None):
       """
       @summary: Returns a pamsum in CSV format
@@ -787,19 +800,6 @@ class RADClient(object):
             return False
       return cnt
 
-   # .........................................
-   def getPamSum(self, expId, bucketId, pamSumId):
-      """
-      @summary: Returns a pamsum
-      @param expId: The id of the experiment container
-      @param bucketId: The id of the bucket containing the pamsum
-      @param pamSumId: The id of the pamsum to return
-      """
-      url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/%s" % \
-               (self.cl.server, expId, bucketId, pamSumId)
-      obj = self.cl.makeRequest(url, method="GET", objectify=True).pamsum
-      return obj
-   
    # .........................................
    def getPamSumShapegrid(self, filePath, experimentId, bucketId, pamsumId):
       """
@@ -1206,51 +1206,3 @@ class RADClient(object):
       return status, stage
       
    # -------------------------------------------------------------------------
-
-   # =========================================================================
-   # =                          Deprecated Functions                         =
-   # =========================================================================
-   # .........................................
-   def postShapegrid(self, shpName, cellShape, cellSize, mapUnits, epsgCode, bbox, cutout=None):
-      """
-      @summary: Posts a new shapegrid
-      @param shpName: The name of this new bucket's shapegrid
-      @param cellShape: The shape of the cells for the shapegrid
-      @param cellSize: The size of the cells in mapUnits
-      @param mapUnits: The units of the cell size (ie: dd for decimal degrees)
-      @param epsgCode: The EPSG code representing the projection of the bucket
-      @param bbox: The bounding box for the new bucket
-      @param cutout: (optional) WKT representing the area to cut out
-      @deprecated: This will be removed in a future version.  We don't have a
-                      real usage pattern where a shapegrid needs to be created
-                      without being attached to a bucket.  New buckets can be
-                      created that reference previously created shapegrids.
-      """
-      postXml = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<lmRad:request xmlns:lmRad="http://lifemapper.org"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://lifemapper.org 
-                                               /schemas/radServiceRequest.xsd">
-   <lmRad:shapegrid>
-      <lmRad:name>%s</lmRad:name>
-      <lmRad:cellShape>%s</lmRad:cellShape>
-      <lmRad:cellSize>%s</lmRad:cellSize>
-      <lmRad:mapUnits>%s</lmRad:mapUnits>
-      <lmRad:epsgCode>%s</lmRad:epsgCode>
-      <lmRad:bounds>%s</lmRad:bounds>
-%s
-   </lmRad:shapegrid>
-</lmRad:request> 
-""" % (shpName, cellShape, cellSize, mapUnits, epsgCode, bbox, 
-       "                 <lmRad:cutout>%s</lmRad:cutout>" % \
-                                          cutout if cutout is not None else "")
-      
-      url = "%s/services/rad/shapegrids" % self.cl.server
-      obj = self.cl.makeRequest(url, 
-                                method="POST", 
-                                body=postXml, 
-                                headers={"Content-Type" : "application/xml"},
-                                objectify=True)
-      return obj
-
