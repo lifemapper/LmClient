@@ -1,7 +1,7 @@
 """
 @summary: Constants for the Lifemapper web service clients
 @author: CJ Grady
-@version: 3.0.1
+@version: 3.1.0
 @status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
@@ -32,4 +32,5 @@ CONTENT_TYPES = {
                  "GTiff" : "image/tiff"
                 }
 
-LM_CLIENT_VERSION_URL = "{0}/clients/versions.xml".format(WEBSITE_ROOT)
+LM_CLIENT_VERSION_URL = "http://lifemapper.org/clients/versions.xml"
+LM_INSTANCES_URL = "http://lifemapper.org/clients/instances.xml"

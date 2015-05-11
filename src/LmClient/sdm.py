@@ -2,8 +2,8 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 3.0.2
-@status: beta
+@version: 3.1.0
+@status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
 
@@ -40,7 +40,7 @@
 from collections import namedtuple
 import json
 
-from LmClient.constants import CONTENT_TYPES
+from LmClient.constants import CONTENT_TYPES, LM_INSTANCES_URL
 
 # .............................................................................
 class AlgorithmParameter(object):
@@ -146,6 +146,7 @@ class SDMClient(object):
       """
       self.cl = cl
       self.algos = self._getAlgorithms()
+      self.instances = self._getInstances()
 
    # .........................................
    def _getAlgorithms(self):
@@ -155,6 +156,15 @@ class SDMClient(object):
       """
       url = "%s/clients/algorithms.xml" % self.cl.server
       obj = self.cl.makeRequest(url, method="GET", objectify=True)
+      return obj
+   
+   # .........................................
+   def _getInstances(self):
+      """
+      @summary: Gets the available instances for query from the Lifemapper 
+                   server
+      """
+      obj = self.cl.makeRequest(LM_INSTANCES_URL, method="GET", objectify=True)
       return obj
    
    # .........................................
@@ -175,6 +185,25 @@ class SDMClient(object):
       else:
          raise Exception("Algorithm code: %s was not recognized" % code)
       return a
+   
+   # .........................................
+   def getAvailableInstances(self):
+      """
+      @summary: Returns a list of (name, base service url) tuples of available 
+                   instances to be queried by the client
+      """
+      availableInstances = []
+      
+      myVersion = self.cl.getVersionNumbers()
+      
+      for instance in self.instances:
+         minVersion = self.cl.getVersionNumbers(verStr=instance.minimumClientVersion)
+         maxVersion = self.cl.getVersionNumbers(verStr=instance.maximumClientVersion)
+         
+         if myVersion >= minVersion and myVersion <= maxVersion:
+            availableInstances.append((instance.name, instance.baseUrl))
+      
+      return availableInstances
    
    # --------------------------------------------------------------------------
    # ===============
@@ -657,22 +686,29 @@ class SDMClient(object):
          return cnt
    
    # .........................................
-   def getOccurrenceSetShapefile(self, occId, filename=None):
+   def getOccurrenceSetShapefile(self, occId, filename=None, overwrite=False):
       """
       @summary: Gets a Lifemapper occurrence set as a shapefile
       @param occId: The id of the occurrence set to get. [integer]
       @param filename: (optional) The name of the file location to save the 
                           output. [string]  If it is not provided the content 
-                          will be returned as a string
+                          will be returned as a string.  If the filename is a 
+                          .zip file, the output will be written to that file.  
+                          If it is a .shp path, the output will use that base
+                          name for output.  If the filename is a directory, the
+                          files will be written to that directory with the 
+                          names in the zipfile.
+      @param overwrite: (optional): Should files be overwritten if they exist?
       @note: This function will be removed in a later version in favor of 
                 specifying the format when making the get request
       """
       url = "%s/services/sdm/occurrences/%s/shapefile" % (self.cl.server, occId)
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
-         f = open(filename, 'wb')
-         f.write(cnt)
-         f.close()
+         self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
+         #f = open(filename, 'wb')
+         #f.write(cnt)
+         #f.close()
          return None
       else:
          return cnt
@@ -1183,14 +1219,21 @@ class SDMClient(object):
    # --------------------------------------------------------------------------
 
    # .........................................
-   def hint(self, query, maxReturned=None):
+   def hint(self, query, maxReturned=None, serviceRoot=None):
       """
       @summary: Queries for occurrence sets that match the partial query string
       @param query: The partial string to match (genus species).  Must be at 
                        least 3 characters.
       @param maxReturned: (optional) The maximum number of results to return
+      @param serviceRoot: (optional) The web server root for the hint service.  
+                             Defaults to the instance that the object is 
+                             connected to if None is provided.
       """
-      SearchHit = namedtuple('SearchHit', ['name', 'id', 'numPoints'])
+      if serviceRoot is None:
+         serviceRoot = self.cl.server
+         
+      SearchHit = namedtuple('SearchHit', ['name', 'id', 'numPoints', 
+                                           'downloadUrl'])
       if len(query) < 3:
          raise Exception, "Please provide at least 3 characters to hint service"
       
@@ -1198,7 +1241,7 @@ class SDMClient(object):
                 ("maxReturned", maxReturned),
                 ("format", "json")
                ]
-      url = "%s/hint/species/%s" % (self.cl.server, query)
+      url = "%s/hint/species/%s" % (serviceRoot, query)
       
       res = self.cl.makeRequest(url, method="get", parameters=params)
       
@@ -1215,17 +1258,33 @@ class SDMClient(object):
       for item in jsonItems:
          items.append(SearchHit(name=item.get('name'),
                                 id=int(item.get('occurrenceSet')),
-                                numPoints=int(item.get('numPoints'))))
+                                numPoints=int(item.get('numPoints')),
+                                downloadUrl=item.get('downloadUrl')))
       if maxReturned is not None and maxReturned < len(items):
          items = items[:maxReturned]
       return items
+
+   # .........................................
+   def getShapefileFromOccurrencesHint(self, searchHit, filename, overwrite=False):
+      """
+      @summary: Downloads a shapefile from the occurrences hint service.  This
+                   will start by downloading the Lifemapper shapefile but can
+                   be expanded later to query the original data source.
+      @param searchHit: The SearchHit named tuple returned by the hint service
+      @param filename: The file location to save the shapefile
+      @param overwrite: (optional) Should files be overwritten if they exist?
+      """
+      url = searchHit.downloadUrl
+      cnt = self.cl.makeRequest(url, method="GET")
+      self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
 
    # .........................................
    def getOgcEndpoint(self, obj):
       """
       @summary: Returns the OGC endpoint for a Lifemapper SDM object
       @param obj: The object to get the OGC endpoint of
-      @note: This will be moved in version 2.1
       """
-      return obj.mapPrefix
-   
+      endpoint = "{base}/ogc?layers={layersParam}".format(
+                                                  base=obj.metadataUrl,
+                                                  layersParam=obj.mapLayername)
+      return endpoint

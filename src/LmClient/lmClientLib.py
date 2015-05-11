@@ -3,7 +3,7 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 3.0.1
+@version: 3.1.0
 @status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
@@ -128,7 +128,7 @@ class _Client(object):
    """
    @summary: Private Lifemapper client class
    """
-   __version__ = "3.0.1"
+   __version__ = "3.1.0"
 
    # .........................................
    def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):
@@ -163,9 +163,9 @@ class _Client(object):
          if client.name == clientName:
             minVersionStr = client.versions.minimum
             curVersionStr = client.versions.current
-            minVersion = self._getVersionNumbers(verStr=minVersionStr)
-            curVersion = self._getVersionNumbers(verStr=curVersionStr)
-            myVersion = self._getVersionNumbers(verStr=verStr)
+            minVersion = self.getVersionNumbers(verStr=minVersionStr)
+            curVersion = self.getVersionNumbers(verStr=curVersionStr)
+            myVersion = self.getVersionNumbers(verStr=verStr)
             
             if myVersion < minVersion:
                raise OutOfDateException(myVersion, minVersion)
@@ -174,7 +174,7 @@ class _Client(object):
                                    (myVersion, curVersion), Warning)
             
    # .........................................
-   def _getVersionNumbers(self, verStr=None):
+   def getVersionNumbers(self, verStr=None):
       """
       @summary: Splits a version string into a tuple
       @param verStr: The version number as a string, if None, get the client 
@@ -204,6 +204,52 @@ class _Client(object):
       return (major, minor, revision, status)
       
    # .........................................
+   def autoUnzipShapefile(self, cnt, filePath, overwrite=False):
+      """
+      @summary: Attempt to unzip a zipped shapefile.
+      @param cnt: The zipped shapefile content
+      @param filePath: If a directory is specified, unzip the shapefile there.  
+                          If a .zip path is specified, write out the zipfile 
+                          as-is.  If a .shp path is specified, write out the 
+                          shapefile files with that name as the base.
+      @param overwrite: (optional) Boolean indicating if the files should be 
+                           overwritten if present
+      @note: If specifying a directory as the filePath, it should exist
+      """
+      if os.path.isdir(filePath):
+         with zipfile.ZipFile(StringIO.StringIO(cnt), 'r', allowZip64=True) as zf:
+            # Check to see if files exist
+            nameList = zf.namelist()
+            if not overwrite:
+               for name in nameList:
+                  if os.path.exists(os.path.join(filePath, name)):
+                     raise Exception( 
+                        "File %s, already exists and overwrite is: %s" % (
+                                    os.path.join(filePath, name), overwrite))
+            zf.extractall(filePath)
+      else:
+         base, ext = os.path.splitext(filePath)
+         if ext == '.zip':
+            with open(filePath, 'w') as outF:
+               outF.write(cnt)
+         elif ext == '.shp':
+            # Check to see if filePath exists
+            # Able to write if path doesn't exist or overwrite is true
+            if not os.path.exists(filePath) or overwrite:
+               with zipfile.ZipFile(StringIO.StringIO(cnt), 'r', allowZip64=True) as zf:
+                  for name in zf.namelist():
+                     fCnt = zf.read(name)
+                     fBase, fExt = os.path.splitext(name)
+                     with open(os.path.join(filePath, '%s%s' % (base, fExt)), 'w') as outF:
+                        outF.write(fCnt)
+                     
+            else:
+               raise Exception, "%s already exists and overwrite is: %s" % (
+                                                           filePath, overwrite)
+         else:
+            raise Exception, "Do not know how to handle file path: %s" % filePath
+   
+   # .........................................
    def getAutozipShapefileStream(self, fn):
       """
       @summary: Automatically creates a zipped version of a shapefile from the
@@ -223,7 +269,7 @@ class _Client(object):
          raise Exception ("Filename must end in '.shp'")
       
       outStream = StringIO.StringIO()
-      zf = zipfile.ZipFile(outStream, 'w')
+      zf = zipfile.ZipFile(outStream, 'w', allowZip64=True)
       for f in files:
          zf.write(f, os.path.basename(f))
       zf.close()
