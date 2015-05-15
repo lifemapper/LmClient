@@ -230,7 +230,7 @@ class _Client(object):
       else:
          base, ext = os.path.splitext(filePath)
          if ext == '.zip':
-            with open(filePath, 'w') as outF:
+            with open(filePath, 'wb') as outF:
                outF.write(cnt)
          elif ext == '.shp':
             # Check to see if filePath exists
@@ -240,7 +240,7 @@ class _Client(object):
                   for name in zf.namelist():
                      fCnt = zf.read(name)
                      fBase, fExt = os.path.splitext(name)
-                     with open(os.path.join(filePath, '%s%s' % (base, fExt)), 'w') as outF:
+                     with open(os.path.join(filePath, '%s%s' % (base, fExt)), 'wb') as outF:
                         outF.write(fCnt)
                      
             else:
