@@ -1,7 +1,7 @@
 """
 @summary: Constants for the Lifemapper web service clients
 @author: CJ Grady
-@version: 3.1.0
+@version: 3.3.0
 @status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
@@ -25,12 +25,11 @@
           Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 
           02110-1301, USA.
 """
-from LmCommon.common.localconstants import WEBSITE_ROOT
-
 CONTENT_TYPES = {
                  "AAIGrid" : "text/plain",
                  "GTiff" : "image/tiff"
                 }
 
-LM_CLIENT_VERSION_URL = "http://lifemapper.org/clients/versions.xml"
-LM_INSTANCES_URL = "http://lifemapper.org/clients/instances.xml"
+LM_CLIENT_VERSION_URL = "http://svc.lifemapper.org/clients/versions.xml"
+LM_INSTANCES_URL = "http://svc.lifemapper.org/clients/instances.xml"
+   

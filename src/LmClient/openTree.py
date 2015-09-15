@@ -2,7 +2,7 @@
 @summary: Module containing client functions for interacting with OpenTree web 
              services
 @author: CJ Grady / Jeff Cavner
-@version: 3.1.0
+@version: 3.3.0
 @status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research

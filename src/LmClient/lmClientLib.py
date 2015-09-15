@@ -3,7 +3,7 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 3.1.0
+@version: 3.3.0
 @status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
@@ -48,6 +48,7 @@ import StringIO
 from types import ListType
 import urllib
 import urllib2
+from urlparse import urlparse
 import warnings
 import zipfile
 
@@ -58,8 +59,9 @@ from LmClient.rad import RADClient
 from LmClient.sdm import SDMClient
 
 from LmCommon.common.lmconstants import DEFAULT_POST_USER, SHAPEFILE_EXTENSIONS
-from LmCommon.common.localconstants import ARCHIVE_USER, WEBSITE_ROOT
+from LmCommon.common.localconstants import ARCHIVE_USER, WEBSERVICES_ROOT
 from LmCommon.common.lmXml import deserialize, fromstring
+from LmCommon.common.singleton import singleton
 from LmCommon.common.unicode import toUnicode
 
 # .............................................................................
@@ -87,32 +89,28 @@ class OutOfDateException(Exception):
                                                self.myVersion, self.minVersion)
 
 # .............................................................................
+@singleton
 class LMClient(object):
    """
    @summary: Lifemapper client library class
    """
    # .........................................
-   def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):
+   def __init__(self, server=WEBSERVICES_ROOT):
       """
       @summary: Constructor
-      @param userId: (optional) The id of the user to use for this session
-      @param pwd: (optional) The password for the specified user
       @param server: (optional) The Lifemapper webserver address
       @note: Lifemapper RAD services are not available anonymously
       """
-      self._cl = _Client(userId=userId, pwd=pwd, server=server)
+      self._cl = _Client(server=server)
       self._cl.checkVersion()
       self.sdm = SDMClient(self._cl)
+   
+   # .........................................
+   def login(self, userId, pwd):
       if userId not in [DEFAULT_POST_USER, ARCHIVE_USER]:
          self.rad = RADClient(self._cl)
          self.otl = OTLClient(self._cl)
-   
-   # .........................................
-   def __del__(self):
-      """
-      @summary: Destructor.  Logs out for cleanup
-      """
-      self._cl.logout()
+      self._cl._login(userId, pwd)
       
    # .........................................
    def logout(self):
@@ -128,26 +126,17 @@ class _Client(object):
    """
    @summary: Private Lifemapper client class
    """
-   __version__ = "3.1.0"
+   __version__ = "3.3.0"
+   UA_STRING = 'LMClient/%s (Lifemapper Python Client Library; http://lifemapper.org; lifemapper@ku.edu)' % __version__
 
    # .........................................
-   def __init__(self, userId=DEFAULT_POST_USER, pwd=None, server=WEBSITE_ROOT):
+   def __init__(self, server=WEBSERVICES_ROOT):
       """
       @summary: Constructor of LMClient
-      @param userId: (optional) User id to use if different from the default
-                        [string]
-      @param pwd: (optional) Password for optional user id. [string]
       @param server: (optional) The Lifemapper web server root address
       """
-      self.userId = userId
-      self.pwd = pwd
       self.server = server
       
-      self.cookieJar = cookielib.LWPCookieJar()
-      opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
-      urllib2.install_opener(opener)
-      self._login()
-   
    # .........................................
    def checkVersion(self, clientName="lmClientLib", verStr=None):
       """
@@ -306,7 +295,7 @@ class _Client(object):
             if not isinstance(lst, ListType):
                lst = [lst]
             return lst
-      except Exception:
+      except Exception, e:
          #print e
          pass
       return []
@@ -332,7 +321,7 @@ class _Client(object):
       else:
          url = "%s?%s" % (url, urlparams)
       req = urllib2.Request(url, data=body, headers=headers)
-      req.add_header('User-Agent', 'LMClient/%s (Lifemapper Python Client Library; http://lifemapper.org; lifemapper@ku.edu)' % self.__version__)
+      req.add_header('User-Agent', self.UA_STRING)
       try:
          ret = urllib2.urlopen(req)
       except urllib2.HTTPError, e:
@@ -358,16 +347,25 @@ class _Client(object):
       return deserialize(fromstring(xmlString))   
 
    # .........................................
-   def _login(self):
+   def _login(self, userId, pwd):
       """
       @summary: Attempts to log a user in
       @todo: Handle login failures
       """
-      if self.userId != DEFAULT_POST_USER and self.userId != ARCHIVE_USER and \
-                        self.pwd is not None:
+      # Legacy code support.  This will go away
+      self.userId = userId
+      
+      policyServer = urlparse(self.server).netloc
+      policy = cookielib.DefaultCookiePolicy(allowed_domains=(policyServer,))
+      self.cookieJar = cookielib.LWPCookieJar(policy=policy)
+      opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
+      urllib2.install_opener(opener)
+
+      if userId != DEFAULT_POST_USER and userId != ARCHIVE_USER and \
+                        pwd is not None:
          url = "%s/login" % self.server
          
-         urlParams = [("username", self.userId), ("pword", self.pwd)]
+         urlParams = [("username", userId), ("pword", pwd)]
          
          self.makeRequest(url, parameters=urlParams)
 

@@ -1,7 +1,7 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 3.1.0
+@version: 3.3.0
 @status: release
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
@@ -72,6 +72,16 @@ class RADClient(object):
                                               ("beforeTime", beforeTime),
                                               ("epsgCode", epsgCode)])
       
+   # .........................................
+   def deleteExperiment(self, expId):
+      """
+      @summary: Deletes a Lifemapper RAD experiment
+      @param expId: The id of the experiment to delete
+      """
+      url = "%s/services/rad/experiments/%s" % (self.cl.server, expId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+   
    # .........................................
    def getExperiment(self, expId):
       """
@@ -170,7 +180,19 @@ class RADClient(object):
       url = "%s/services/rad/experiments/%s/buckets" % (self.cl.server, expId)
       return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
                                               ("beforeTime", beforeTime)])
-
+   
+   # .........................................
+   def deleteBucket(self, experimentId, bucketId):
+      """
+      @summary: Delete a bucket from the Lifemapper system
+      @param experimentId: The experiment containing the bucket
+      @param bucket: The bucket to delete
+      """
+      url = "%s/services/rad/experiments/%s/buckets/%s" % (self.cl.server, 
+                                                        experimentId, bucketId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+      
    # .........................................
    def getBucket(self, experimentId, bucketId):
       """
@@ -544,6 +566,76 @@ class RADClient(object):
          return False
    
    # .........................................
+   def getAncillaryLayer(self, expId, ancLyrId):
+      """
+      @summary: Get a specific ancillary layer
+      @param expId: The experiment that the ancillary layer belongs to
+      @param ancLyrId: The id of the ancillary layer
+      """
+      url = "%s/services/rad/experiments/%s/anclayers/%s/xml"
+      obj = self.cl.makeRequest(url, method="GET", objectify=True).layer
+      return obj
+   
+   # .........................................
+   def listAncillaryLayers(self, expId, afterTime=None, beforeTime=None, 
+                                 epsgCode=None, layerId=None, layerName=None, 
+                                 page=0, perPage=100, ancillaryValueId=None, 
+                                 fullObjects=False):
+      """
+      @summary: Lists Ancillary layers for a user
+      @param expId: The id of the experiment to list ancillary layers for
+      @param afterTime: List ancillary layers with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: List ancillary layers with creation times before this 
+                            time (ISO 8601 format)
+      @param epsgCode: List ancillary layers with this EPSG code
+      @param layerId: List ancillary layers that use the layer with this id
+      @param layerName: List ancillary layers with layers that have this name
+      @param page: The page of results
+      @param perPage: The number of results per page
+      @param ancillaryValueId: List ancillary layers that have the ancillary 
+                                  values specified by this id
+      @param fullObjects: (optional) If True, return the full objects instead
+                             of the list objects
+      """
+      url = "%s/services/rad/experiments/%s/anclayers" % (self.cl.server, expId)
+      ancLyrs = self.cl.getList(url, parameters=[("afterTime", afterTime), 
+                                              ("beforeTime", beforeTime),
+                                              ("epsgCode", epsgCode),
+                                              ("layerId", layerId),
+                                              ("layerName", layerName),
+                                              ("page", page),
+                                              ("perPage", perPage),
+                                              ("ancillaryValueId", ancillaryValueId),
+                                              ("fullObjects", int(fullObjects))])
+      return ancLyrs
+   
+   def countAncillaryLayers(self, expId, afterTime=None, beforeTime=None, 
+                                 epsgCode=None, layerId=None, layerName=None, 
+                                 ancillaryValueId=None):
+      """
+      @summary: Counts Ancillary layers for a user
+      @param expId: The id of the experiment to count ancillary layers for
+      @param afterTime: Count ancillary layers with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: Count ancillary layers with creation times before this 
+                            time (ISO 8601 format)
+      @param epsgCode: Count ancillary layers with this EPSG code
+      @param layerId: Count ancillary layers that use the layer with this id
+      @param layerName: Count ancillary layers with layers that have this name
+      @param ancillaryValueId: Count ancillary layers that have the ancillary 
+                                  values specified by this id
+      """
+      url = "%s/services/rad/experiments/%s/anclayers" % (self.cl.server, expId)
+      return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
+                                              ("beforeTime", beforeTime),
+                                              ("epsgCode", epsgCode),
+                                              ("layerId", layerId),
+                                              ("layerName", layerName),
+                                              ("ancillaryValueId", ancillaryValueId)
+                                              ])
+
+   # .........................................
    def getAncLayers(self, expId):
       """
       @summary: Get ancillary layers associated with an experiment
@@ -645,6 +737,82 @@ class RADClient(object):
       else:
          return False
    
+   # .........................................
+   def getPresenceAbsenceLayer(self, expId, paLyrId):
+      """
+      @summary: Get a specific presence absence layer
+      @param expId: The experiment that the presence absence layer belongs to
+      @param ancLyrId: The id of the presence absence layer
+      """
+      url = "%s/services/rad/experiments/%s/palayers/%s/xml"
+      obj = self.cl.makeRequest(url, method="GET", objectify=True).layer
+      return obj
+   
+   # .........................................
+   def listPresenceAbsenceLayers(self, expId, afterTime=None, beforeTime=None, 
+                                 epsgCode=None, layerId=None, layerName=None, 
+                                 page=0, perPage=100, presenceAbsenceId=None, 
+                                 fullObjects=False):
+      """
+      @summary: Lists Presence Absence layers for a user
+      @param expId: The id of the experiment to list PA layers for
+      @param afterTime: List presence absence layers with creation times after 
+                           this time (ISO 8601 format)
+      @param beforeTime: List presence absence layers with creation times 
+                            before this time (ISO 8601 format)
+      @param epsgCode: List presence absence layers with this EPSG code
+      @param layerId: List presence absence layers that use the layer with this 
+                         id
+      @param layerName: List presence absence layers with layers that have this 
+                           name
+      @param page: The page of results
+      @param perPage: The number of results per page
+      @param presenceAbsenceId: List presence absence layers that have the set 
+                                   of presence absence values specified by this 
+                                   id
+      @param fullObjects: (optional) If True, return the full objects instead
+                             of the list objects
+      """
+      url = "%s/services/rad/experiments/%s/palayers" % (self.cl.server, expId)
+      paLyrs = self.cl.getList(url, parameters=[("afterTime", afterTime), 
+                                              ("beforeTime", beforeTime),
+                                              ("epsgCode", epsgCode),
+                                              ("layerId", layerId),
+                                              ("layerName", layerName),
+                                              ("page", page),
+                                              ("perPage", perPage),
+                                              ("presenceAbsenceId", presenceAbsenceId),
+                                              ("fullObjects", int(fullObjects))])
+      return paLyrs
+   
+   # .........................................
+   def countPresenceAbsenceLayers(self, expId, afterTime=None, beforeTime=None, 
+                                 epsgCode=None, layerId=None, layerName=None, 
+                                 presenceAbsenceId=None):
+      """
+      @summary: Counts Presence Absence layers for a user
+      @param expId: The id of the experiment to count PA layers for
+      @param afterTime: Count presence absence layers with creation times after 
+                           this time (ISO 8601 format)
+      @param beforeTime: Count presence absence layers with creation times 
+                            before this time (ISO 8601 format)
+      @param epsgCode: Count presence absence layers with this EPSG code
+      @param layerId: Count presence absence layers that use the layer with this 
+                         id
+      @param layerName: Count presence absence layers with layers that have this 
+                           name
+      @param presenceAbsenceId: Count presence absence layers that have the set 
+                                   of presence absence values specified by this 
+                                   id
+      """
+      url = "%s/services/rad/experiments/%s/palayers" % (self.cl.server, expId)
+      return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
+                                              ("beforeTime", beforeTime),
+                                              ("epsgCode", epsgCode),
+                                              ("layerId", layerId),
+                                              ("layerName", layerName),
+                                              ("presenceAbsenceId", presenceAbsenceId)])
+
    # .........................................
    def getPALayers(self, expId):
       """
@@ -766,6 +934,19 @@ class RADClient(object):
                                               ("randomized", randomized),
                                               ("randomMethod", randomMethod)])
 
+   # .........................................
+   def deletePamSum(self, expId, bucketId, pamSumId):
+      """
+      @summary: Deletes a Lifemapper RAD PAM Sum
+      @param expId: The id of the experiment container
+      @param bucketId: The id of the bucket containing the pamsum
+      @param pamSumId: The id of the pamsum to delete
+      """
+      url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/%s" % \
+               (self.cl.server, expId, bucketId, pamSumId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+    
    # .........................................
    def getPamSum(self, expId, bucketId, pamSumId):
       """
@@ -920,6 +1101,16 @@ class RADClient(object):
       return lyrs
    
    # .........................................
+   def deleteLayer(self, layerId):
+      """
+      @summary: Deletes a layer from Lifemapper
+      @param layerId: The id of the layer to delete
+      """
+      url = "%s/services/rad/layers/%s" % (self.cl.server, layerId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+   
+   # .........................................
    def getLayer(self, layerId):
       """
       @summary: Gets a layer metadata object
@@ -946,6 +1137,7 @@ class RADClient(object):
                              of the list objects
       """
       url = "%s/services/rad/layers" % self.cl.server
+      # @todo: Does this need userId in params?
       lyrs = self.cl.getList(url, parameters=[("afterTime", afterTime), 
                                               ("beforeTime", beforeTime),
                                               ("epsgCode", epsgCode),
@@ -1142,6 +1334,16 @@ class RADClient(object):
                                               ("layerId", layerId),
                                               ("layerName", layerName)])
       
+   # .........................................
+   def deleteShapegrid(self, shpId):
+      """
+      @summary: Deletes a shapegrid from the Lifemapper system
+      @param shpId: The id of the shapegrid to delete
+      """
+      url = "%s/services/rad/shapegrids/%s" % (self.cl.server, shpId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+
    # .........................................
    def getShapegrid(self, shpId):
       """

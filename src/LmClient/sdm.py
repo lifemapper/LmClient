@@ -2,8 +2,8 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 3.1.0
-@status: release
+@version: 3.3.0
+@status: beta
 
 @license: Copyright (C) 2015, University of Kansas Center for Research
 
@@ -39,8 +39,62 @@
 """
 from collections import namedtuple
 import json
+import re
 
 from LmClient.constants import CONTENT_TYPES, LM_INSTANCES_URL
+from LmCommon.common.lmconstants import Instances
+
+# .............................................................................
+class ParameterOutOfRange(Exception):
+   """
+   @summary: This exception indicates that an algorithm parameter has an 
+                invalid value
+   """
+   # ...............................
+   def __init__(self, param):
+      self.param = param
+      Exception.__init__(self)
+      self.msg = "Parameter %s (%s), min: %s, max: %s, value: %s" % (
+                       self.param.displayName, self.param.name, self.param.min, 
+                       self.param.max, self.param.value)
+   
+   # ...............................
+   def __repr__(self):
+      return "%s %s" % (self.__class__, unicode(self))
+      
+   # ...............................
+   def __str__(self):
+      return unicode(self)
+   
+   # ...............................
+   def __unicode__(self):
+      return self.msg
+
+# .............................................................................
+class ProjectionsNotAllowed(Exception):
+   """
+   @summary: This exception indicates that projection scenarios are specified, 
+                but the value of a parameter indicates that they cannot be
+   """
+   # ...............................
+   def __init__(self, param):
+      self.param = param
+      Exception.__init__(self)
+      self.msg = "Projections specified, but not alowed because the value of %s (%s) does not equal %s" % (
+                        self.param.displayName, self.param.value, 
+                        self.param.allowProjectionsIfValue)
+   
+   # ...............................
+   def __repr__(self):
+      return "%s %s" % (self.__class__, unicode(self))
+      
+   # ...............................
+   def __str__(self):
+      return unicode(self)
+   
+   # ...............................
+   def __unicode__(self):
+      return self.msg
 
 # .............................................................................
 class AlgorithmParameter(object):
@@ -48,7 +102,8 @@ class AlgorithmParameter(object):
    @summary: Algorithm parameter class
    """
    def __init__(self, name, pType, pDefault=None, pMin=None, pMax=None, 
-                                                                  pValue=None):
+                        pValue=None, doc=None, displayName=None, options=None,
+                        allowProjectionsIfValue=None):
       """
       @summary: Constructor
       @param name: The name of the algorithm parameter
@@ -57,6 +112,11 @@ class AlgorithmParameter(object):
       @param pMin: (optional) The minimum value of the parameter
       @param pMax: (optional) The maximum value of the parameter
       @param pValue: (optional) The value of the parameter
+      @param doc: (optional) If this parameter is provided, it is set as the 
+                     docstring for the object and the value of the doc attribute
+      @param displayName: (optional) A display name for the parameter
+      @param options: (optional) A list of (name, value) tuples for the value 
+                         options for this parameter
       """
       self.name = name
       self.type = pType
@@ -64,6 +124,11 @@ class AlgorithmParameter(object):
       self.min = pMin
       self.max = pMax
       self.value = pValue if pValue is not None else self.default
+      self.doc = re.sub(' +', ' ', doc.replace('\n', ''))
+      self.__doc__ = self.doc
+      self.displayName = displayName
+      self.options = options
+      self.allowProjectionsIfValue = allowProjectionsIfValue
       
 # .............................................................................
 class Algorithm(object):
@@ -76,6 +141,29 @@ class Algorithm(object):
       @summary: Constructor
       @param clAlg: Client library algorithm object
       """
+      try:
+         self.authors = clAlg.authors
+      except:
+         self.authors = None
+         
+      try:
+         self.description = re.sub(' +', ' ', clAlg.description.replace('\n', ''))
+         
+      except:
+         self.description = None
+
+      try:
+         self.link = clAlg.link
+      except:
+         self.link = None
+         
+      try:
+         self.version = clAlg.version
+         self.__version__ = clAlg.version
+      except:
+         self.version = None
+         self.__version__ = None
+         
       self.code = clAlg.code
       self.name = clAlg.name
       self.parameters = []
@@ -90,8 +178,31 @@ class Algorithm(object):
          except:
             pMax = None
              
+         try:
+            doc = param.doc
+         except:
+            doc = None
+         
+         try:
+            displayName = param.displayName
+         except:
+            displayName = None
+            
+         try:
+            options = [(o.name, o.value) for o in param.options]
+         except:
+            options = None
+            
+         try:
+            allowProj = param.allowProjectionsIfValue
+         except:
+            allowProj = None
+            
+            
          p = AlgorithmParameter(param.name, param.type, pDefault=param.default,
-                                pMin=pMin, pMax=pMax)
+                                pMin=pMin, pMax=pMax, doc=doc, 
+                                displayName=displayName, options=options,
+                                allowProjectionsIfValue=allowProj)
          self.parameters.append(p)
          
    # .........................................
@@ -254,6 +365,16 @@ class SDMClient(object):
       return count
    
    # .........................................
+   def deleteExperiment(self, expId):
+      """
+      @summary: Deletes a Lifemapper SDM experiment
+      @param expId: The id of the experiment to be deleted. [integer]
+      """
+      url = "%s/services/sdm/experiments/%s" % (self.cl.server, expId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+    
+   # .........................................
    def getExperiment(self, expId):
       """
       @summary: Gets a Lifemapper experiment
@@ -356,6 +477,10 @@ class SDMClient(object):
       except:
          algoCode = algorithm
          algorithmParameters = []
+      
+      # Validate algorithm parameters
+      self.validateAlgorithmParameters(algorithmParameters, prjScns)
+
       algoParams = """\
                   <lm:parameters>
                      {params}
@@ -441,6 +566,16 @@ class SDMClient(object):
       count = self.cl.getCount(url, params)
       return count
    
+   # .........................................
+   def deleteLayer(self, lyrId):
+      """
+      @summary: Deletes a Lifemapper environmental layer
+      @param lyrId: The id of the layer to be deleted. [integer]
+      """
+      url = "%s/services/sdm/layers/%s" % (self.cl.server, lyrId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+
    # .........................................
    def getLayer(self, lyrId):
       """
@@ -654,6 +789,16 @@ class SDMClient(object):
       return count
    
    # .........................................
+   def deleteOccurrenceSet(self, occId):
+      """
+      @summary: Deletes a Lifemapper occurrence set
+      @param occId: The id of the occurrence set to be deleted. [integer]
+      """
+      url = "%s/services/sdm/occurrences/%s" % (self.cl.server, occId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+   
+   # .........................................
    def getOccurrenceSet(self, occId):
       """
       @summary: Gets a Lifemapper occurrence set
@@ -853,6 +998,16 @@ class SDMClient(object):
       return count
    
    # .........................................
+   def deleteProjection(self, prjId):
+      """
+      @summary: Deletes a Lifemapper SDM projection
+      @param prjId: The id of the projection to be deleted. [integer]
+      """
+      url = "%s/services/sdm/projections/%s" % (self.cl.server, prjId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+    
+   # .........................................
    def getProjection(self, prjId):
       """
       @summary: Gets a Lifemapper projection
@@ -1017,6 +1172,16 @@ class SDMClient(object):
       return count
    
    # .........................................
+   def deleteScenario(self, scnId):
+      """
+      @summary: Deletes a Lifemapper scenario
+      @param scnId: The id of the scenario to be deleted. [integer]
+      """
+      url = "%s/services/sdm/scenarios/%s" % (self.cl.server, scnId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+   
+   # .........................................
    def getScenario(self, scnId):
       """
       @summary: Gets a Lifemapper scenario
@@ -1149,6 +1314,16 @@ class SDMClient(object):
       return count
    
    # .........................................
+   def deleteTypeCode(self, tcId):
+      """
+      @summary: Deletes a Lifemapper SDM type code
+      @param tcId: The id of the type code to be deleted. [integer]
+      """
+      url = "%s/services/sdm/typecodes/%s" % (self.cl.server, tcId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+    
+   # .........................................
    def getTypeCode(self, tcId):
       """
       @summary: Gets a type code object
@@ -1228,12 +1403,17 @@ class SDMClient(object):
       @param serviceRoot: (optional) The web server root for the hint service.  
                              Defaults to the instance that the object is 
                              connected to if None is provided.
+      @note: This will return a list of SearchHit objects.  These are named
+                tuples that have the attributes: name, id, numPoints, 
+                downloadUrl and binomial.  These attributes are pulled from the 
+                response from the Lucene query and may change over time.
       """
       if serviceRoot is None:
          serviceRoot = self.cl.server
          
       SearchHit = namedtuple('SearchHit', ['name', 'id', 'numPoints', 
-                                           'downloadUrl'])
+                                           'downloadUrl', 'binomial', 
+                                           'numModels'])
       if len(query) < 3:
          raise Exception, "Please provide at least 3 characters to hint service"
       
@@ -1259,24 +1439,42 @@ class SDMClient(object):
          items.append(SearchHit(name=item.get('name'),
                                 id=int(item.get('occurrenceSet')),
                                 numPoints=int(item.get('numPoints')),
-                                downloadUrl=item.get('downloadUrl')))
+                                downloadUrl=item.get('downloadUrl'),
+                                binomial=item.get('binomial'),
+                                numModels=int(item.get('numModels'))))
       if maxReturned is not None and maxReturned < len(items):
          items = items[:maxReturned]
       return items
 
    # .........................................
-   def getShapefileFromOccurrencesHint(self, searchHit, filename, overwrite=False):
+   def getShapefileFromOccurrencesHint(self, searchHit, filename, 
+                                           instanceName=None, overwrite=False):
       """
       @summary: Downloads a shapefile from the occurrences hint service.  This
                    will start by downloading the Lifemapper shapefile but can
                    be expanded later to query the original data source.
       @param searchHit: The SearchHit named tuple returned by the hint service
       @param filename: The file location to save the shapefile
+      @param instanceName: (optional) The name of the instance that the search
+                              hit came from.  This can be used to determine how
+                              to get the data for the resuling shapefile.
       @param overwrite: (optional) Should files be overwritten if they exist?
+      @note: This code should be hardened.  It is mainly for the Spring 2015 
+                iDigBio hackathon
       """
-      url = searchHit.downloadUrl
-      cnt = self.cl.makeRequest(url, method="GET")
-      self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
+      if instanceName.lower() == Instances.IDIGBIO.lower():
+         # Aimee: Edit here for iDigBio
+         # The searh hit objects have documentation in the "hint" function
+         # The binomial will probably be useful.  It is different than name 
+         #   because name is the display name that may include author 
+         #   information and binomial is just that.
+         pass
+      #elif instanceName.lower() == Instances.BISON.lower():
+         # Add Bison processing code here
+      else:
+         url = searchHit.downloadUrl
+         cnt = self.cl.makeRequest(url, method="GET")
+         self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
 
    # .........................................
    def getOgcEndpoint(self, obj):
@@ -1288,3 +1486,37 @@ class SDMClient(object):
                                                   base=obj.metadataUrl,
                                                   layersParam=obj.mapLayername)
       return endpoint
+   
+   # .........................................
+   def validateAlgorithmParameters(self, algoParams, prjScns):
+      """
+      @summary: Validates algorithm parameters for posting an experiment
+      @param algoParams: A list of algorithm parameter objects
+      @param prjScns: A list of projection scenario ids
+      @note: Throws an error if an algorithm parameter is outside of its range
+      @note: Throws an error if projections are specified and parameter 
+                dictates that they can't be
+      """
+      for param in algoParams:
+         castFunc = float
+         if param.type.lower() == 'integer':
+            castFunc = int
+         elif param.type.lower() == 'string':
+            castFunc = str
+            break # Can't compare easily
+         
+         # Look for value out of range
+         if param.min is not None:
+            if castFunc(param.value) < castFunc(param.min):
+               raise ParameterOutOfRange(param)
+         
+         if param.max is not None:
+            if castFunc(param.value) > castFunc(param.max):
+               raise ParameterOutOfRange(param)
+         
+         # Look to see if there shouldn't be projections and are
+         if param.allowProjectionsIfValue is not None:
+            if castFunc(param.allowProjectionsIfValue) != castFunc(param.value)\
+                  and len(prjScns) > 0:
+               raise ProjectionsNotAllowed(param)
+      
