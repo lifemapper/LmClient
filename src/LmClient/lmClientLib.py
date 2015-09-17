@@ -313,6 +313,7 @@ class _Client(object):
       @param objectify: (optional) Should the response be turned into an object
       @return: Response from the server
       """
+      url = url.replace(" ", "%20").replace(",", "%2C")
       parameters = removeNonesFromTupleList(parameters)
       urlparams = urllib.urlencode(parameters)
       
