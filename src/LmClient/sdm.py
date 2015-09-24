@@ -1445,6 +1445,22 @@ class SDMClient(object):
       if maxReturned is not None and maxReturned < len(items):
          items = items[:maxReturned]
       return items
+   
+   # .........................................
+   def searchArchive(self, query, maxReturned=None, serviceRoot=None):
+      """
+      @summary: Queries the Lifemapper Solr index for archive data
+      @param query: The partial string to match (genus species).
+      @param maxReturned: (optional) The maximum number of results to return
+      @note: This will return all models and projections associated with 
+                occurrence sets that match this query
+      @rtype: A list of archive hits
+      """
+      if serviceRoot is None:
+         serviceRoot = self.cl.server
+      url = "%s/hint/archive/%s" % (serviceRoot, query)
+      resp = self.cl.makeRequest(url, method="get", objectify=True)
+      return resp.hits
 
    # .........................................
    def getShapefileFromOccurrencesHint(self, searchHit, filename, 
