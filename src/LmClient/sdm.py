@@ -382,7 +382,7 @@ class SDMClient(object):
       @return: A Lifemapper experiment [LmAttObj]
       """
       url = "%s/services/sdm/experiments/%s" % (self.cl.server, expId)
-      obj = self.cl.makeRequest(url, method="GET", objectify=True).experiment
+      obj = self.cl.makeRequest(url, method="GET", objectify=True).sdmexperiment
       return obj
     
    # .........................................

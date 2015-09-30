@@ -89,7 +89,7 @@ class RADClient(object):
       @param expId: The id of the experiment to return
       """
       url = "%s/services/rad/experiments/%s" % (self.cl.server, expId)
-      obj = self.cl.makeRequest(url, method="GET", objectify=True).experiment
+      obj = self.cl.makeRequest(url, method="GET", objectify=True).radexperiment
       return obj
    
    # .........................................
