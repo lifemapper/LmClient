@@ -162,7 +162,7 @@ class RADClient(object):
                                 body=postXml, 
                                 headers={"Content-Type": "application/xml"},
                                 objectify=True)
-      return obj.experiment
+      return obj.radexperiment
    
      
    # Buckets

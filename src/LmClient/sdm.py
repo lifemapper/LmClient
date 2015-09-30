@@ -526,7 +526,7 @@ class SDMClient(object):
                                 method="POST", 
                                 body=postXml, 
                                 headers={"Content-Type": "application/xml"},
-                                objectify=True).experiment
+                                objectify=True).sdmexperiment
       return obj
    
    # --------------------------------------------------------------------------
