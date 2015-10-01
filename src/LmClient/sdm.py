@@ -1,3 +1,4 @@
+# coding=utf8
 """
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
@@ -43,6 +44,7 @@ import re
 
 from LmClient.constants import CONTENT_TYPES, LM_INSTANCES_URL
 from LmCommon.common.lmconstants import Instances
+from LmCommon.common.unicode import fromUnicode, toUnicode
 
 # .............................................................................
 class ParameterOutOfRange(Exception):
@@ -267,7 +269,7 @@ class SDMClient(object):
       """
       #note: This is just done for Pragma and shouldn't be used for regular 
       #         clients
-      xmlStr = """\
+      xmlStr = toUnicode(u"""\
 <?xml version="1.0"?>
 <algorithms>
    <algorithm code="ANN" name="Artificial Neural Network" version="0.2">
@@ -1948,8 +1950,8 @@ class SDMClient(object):
       </parameters>
    </algorithm>   
 </algorithms>
-"""
-      obj = self.cl.objectify(xmlStr)
+""")
+      obj = self.cl.objectify(fromUnicode(xmlStr))
       #url = "%s/clients/algorithms.xml" % self.cl.server
       #obj = self.cl.makeRequest(url, method="GET", objectify=True)
       return obj
