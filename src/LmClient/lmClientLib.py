@@ -148,37 +148,7 @@ class _Client(object):
                                     cannot continue
       """
       # This is a temporary thing for pragma and should not be used in the wild
-      #res = self.makeRequest(LM_CLIENT_VERSION_URL, objectify=True)
-      xmlString = """\
-<?xml version="1.0"?>
-<clients>
-   <client name="lmCompute">
-      <versions>
-         <current>1.0.0</current>
-         <minimum>1.0.0 beta</minimum>
-      </versions>
-   </client>
-   <client name="lmClientLib">
-      <versions>
-         <current>3.1.0</current>
-         <minimum>2.1.0</minimum>
-      </versions>
-   </client>
-   <client name="lmQGIS">
-      <versions>
-         <current>2.2.0</current>
-         <minimum>2.1.1</minimum>
-      </versions>
-   </client>
-   <client name="lmVt">
-      <versions>
-         <current>2.0.0 beta</current>
-         <minimum>2.0.0 beta</minimum>
-      </versions>
-   </client>
-</clients>
-"""
-      res = self.objectify(xmlString)
+      res = self.makeRequest(LM_CLIENT_VERSION_URL, objectify=True)
       for client in res:
          if client.name == clientName:
             minVersionStr = client.versions.minimum
