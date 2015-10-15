@@ -812,7 +812,19 @@ class RADClient(object):
                                               ("layerId", layerId),
                                               ("layerName", layerName),
                                               ("presenceAbsenceId", presenceAbsenceId)])
-
+   # .........................................
+   def removePALayerFromExperiment(self, expId, paLyrId):
+      """
+      @summary: Removes a presence / absence layer from an experiment
+      @param expId: The id of the experiment to remove the PA layer from
+      @param paLyrId: The presence / absence layer id in the experiment to 
+                         remove
+      """
+      url = "%s/services/rad/experiments/%s/palayers/%s" % (self.cl.server, 
+                                                            expId, paLyrId)
+      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
+      return obj
+   
    # .........................................
    def getPALayers(self, expId):
       """
