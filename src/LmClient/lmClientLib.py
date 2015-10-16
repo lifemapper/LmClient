@@ -324,7 +324,7 @@ class _Client(object):
          url = "%s?%s" % (url, urlparams)
       req = urllib2.Request(url, data=body, headers=headers)
       req.add_header('User-Agent', self.UA_STRING)
-      req.get_method = lambda: method
+      req.get_method = lambda: method.upper()
       try:
          ret = urllib2.urlopen(req)
       except urllib2.HTTPError, e:
