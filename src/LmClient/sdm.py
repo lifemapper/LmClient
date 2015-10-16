@@ -1282,7 +1282,7 @@ class SDMClient(object):
       url = "%s/services/sdm/scenarios" % self.cl.server
       
       obj = self.cl.makeRequest(url, 
-                                method="post", 
+                                method="POST", 
                                 parameters=params,
                                 objectify=True).scenario
       return obj
