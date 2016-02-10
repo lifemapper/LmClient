@@ -102,7 +102,15 @@ class LMClient(object):
       """
       self._cl = _Client(server=server)
       self._cl.checkVersion()
+      self.defaultInstance = self._cl.defaultInstance
       self.sdm = SDMClient(self._cl)
+
+   # .........................................
+   def getAvailableInstances(self):
+      """
+      @summary: Return available instances
+      """
+      return self._cl.getAvailableInstances()
    
    # .........................................
    def login(self, userId, pwd):
