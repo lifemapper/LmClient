@@ -3,10 +3,10 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 3.3.0
+@version: 3.3.4
 @status: beta
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -42,8 +42,7 @@ from collections import namedtuple
 import json
 import re
 
-from LmClient.constants import CONTENT_TYPES, LM_INSTANCES_URL
-from LmCommon.common.lmconstants import Instances
+from LmClient.constants import CONTENT_TYPES
 from LmCommon.common.unicode import fromUnicode, toUnicode
 
 # .............................................................................
@@ -259,7 +258,6 @@ class SDMClient(object):
       """
       self.cl = cl
       self.algos = self._getAlgorithms()
-      self.instances = self._getInstances()
 
    # .........................................
    def _getAlgorithms(self):
@@ -269,15 +267,6 @@ class SDMClient(object):
       """
       url = "%s/clients/algorithms.xml" % self.cl.server
       obj = self.cl.makeRequest(url, method="GET", objectify=True)
-      return obj
-   
-   # .........................................
-   def _getInstances(self):
-      """
-      @summary: Gets the available instances for query from the Lifemapper 
-                   server
-      """
-      obj = self.cl.makeRequest(LM_INSTANCES_URL, method="GET", objectify=True)
       return obj
    
    # .........................................
@@ -298,25 +287,6 @@ class SDMClient(object):
       else:
          raise Exception("Algorithm code: %s was not recognized" % code)
       return a
-   
-   # .........................................
-   def getAvailableInstances(self):
-      """
-      @summary: Returns a list of (name, base service url) tuples of available 
-                   instances to be queried by the client
-      """
-      availableInstances = []
-      
-      myVersion = self.cl.getVersionNumbers()
-      
-      for instance in self.instances:
-         minVersion = self.cl.getVersionNumbers(verStr=instance.minimumClientVersion)
-         maxVersion = self.cl.getVersionNumbers(verStr=instance.maximumClientVersion)
-         
-         if myVersion >= minVersion and myVersion <= maxVersion:
-            availableInstances.append((instance.name, instance.baseUrl))
-      
-      return availableInstances
    
    # --------------------------------------------------------------------------
    # ===============
@@ -1480,19 +1450,9 @@ class SDMClient(object):
       @note: This code should be hardened.  It is mainly for the Spring 2015 
                 iDigBio hackathon
       """
-      if instanceName.lower() == Instances.IDIGBIO.lower():
-         # Aimee: Edit here for iDigBio
-         # The searh hit objects have documentation in the "hint" function
-         # The binomial will probably be useful.  It is different than name 
-         #   because name is the display name that may include author 
-         #   information and binomial is just that.
-         pass
-      #elif instanceName.lower() == Instances.BISON.lower():
-         # Add Bison processing code here
-      else:
-         url = searchHit.downloadUrl
-         cnt = self.cl.makeRequest(url, method="GET")
-         self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
+      url = searchHit.downloadUrl
+      cnt = self.cl.makeRequest(url, method="GET")
+      self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
 
    # .........................................
    def getOgcEndpoint(self, obj):

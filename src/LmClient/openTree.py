@@ -2,10 +2,10 @@
 @summary: Module containing client functions for interacting with OpenTree web 
              services
 @author: CJ Grady / Jeff Cavner
-@version: 3.3.0
-@status: release
+@version: 3.3.4
+@status: beta
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -27,7 +27,7 @@
           02110-1301, USA.
 
 """
-from LmClient.localconstants import OTL_HINT_URL, OTL_TREE_WEB_URL
+from LmClient.constants import OTL_HINT_URL, OTL_TREE_WEB_URL
 
 # .............................................................................
 class OTLClient(object):

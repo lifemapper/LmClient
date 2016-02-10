@@ -9,7 +9,7 @@ Author: CJ Grady
 
 Email: cjgrady@ku.edu
 
-Version: 3.1.0
+Version: 3.3.4
 
 We acknowledge the support of grant BIO/EF #0851290 from the U.S. National Science Foundation for the production of this software.
 

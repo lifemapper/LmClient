@@ -1,10 +1,10 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 3.3.0
+@version: 3.3.4
 @status: release
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,

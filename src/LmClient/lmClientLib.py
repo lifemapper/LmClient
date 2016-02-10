@@ -3,10 +3,10 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 3.3.0
+@version: 3.3.4
 @status: release
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -53,13 +53,12 @@ import warnings
 import zipfile
 
 
-from LmClient.constants import LM_CLIENT_VERSION_URL
 from LmClient.openTree import OTLClient
 from LmClient.rad import RADClient
 from LmClient.sdm import SDMClient
 
-from LmCommon.common.lmconstants import DEFAULT_POST_USER, SHAPEFILE_EXTENSIONS
-from LmCommon.common.localconstants import ARCHIVE_USER, WEBSERVICES_ROOT
+from LmCommon.common.lmconstants import (Instances, LM_CLIENT_VERSION_URL, 
+                                        LM_INSTANCES_URL, SHAPEFILE_EXTENSIONS)
 from LmCommon.common.lmXml import deserialize, fromstring
 from LmCommon.common.singleton import singleton
 from LmCommon.common.unicode import toUnicode
@@ -95,7 +94,7 @@ class LMClient(object):
    @summary: Lifemapper client library class
    """
    # .........................................
-   def __init__(self, server=WEBSERVICES_ROOT):
+   def __init__(self, server=None):
       """
       @summary: Constructor
       @param server: (optional) The Lifemapper webserver address
@@ -107,7 +106,7 @@ class LMClient(object):
    
    # .........................................
    def login(self, userId, pwd):
-      if userId not in [DEFAULT_POST_USER, ARCHIVE_USER]:
+      if userId is not None:
          self.rad = RADClient(self._cl)
          self.otl = OTLClient(self._cl)
       self._cl._login(userId, pwd)
@@ -126,15 +125,20 @@ class _Client(object):
    """
    @summary: Private Lifemapper client class
    """
-   __version__ = "3.3.0"
+   __version__ = "3.3.4"
    UA_STRING = 'LMClient/%s (Lifemapper Python Client Library; http://lifemapper.org; lifemapper@ku.edu)' % __version__
 
    # .........................................
-   def __init__(self, server=WEBSERVICES_ROOT):
+   def __init__(self, server=None):
       """
       @summary: Constructor of LMClient
       @param server: (optional) The Lifemapper web server root address
       """
+      self._getInstances()
+      
+      if server is None:
+         server = self.defaultInstance
+         
       self.server = server
       
    # .........................................
@@ -163,6 +167,14 @@ class _Client(object):
                warnings.warn("Client is not latest version: (%s < %s)" % \
                                    (myVersion, curVersion), Warning)
             
+   # .........................................
+   def getAvailableInstances(self):
+      """
+      @summary: Returns a list of (name, base service url) tuples of available 
+                   instances to be queried by the client
+      """
+      return self.instances
+   
    # .........................................
    def getVersionNumbers(self, verStr=None):
       """
@@ -350,6 +362,35 @@ class _Client(object):
       return deserialize(fromstring(xmlString))   
 
    # .........................................
+   def _getInstances(self):
+      """
+      @summary: Gets the available instances for query from the Lifemapper 
+                   server
+      """
+      self.instances = []
+      obj = self.makeRequest(LM_INSTANCES_URL, method="GET", objectify=True)
+      myVersion = self.getVersionNumbers()
+      self.defaultInstance = None
+      
+      for instance in obj:
+         minVersion = self.getVersionNumbers(verStr=instance.minimumClientVersion)
+         maxVersion = self.getVersionNumbers(verStr=instance.maximumClientVersion)
+         
+         if myVersion >= minVersion and myVersion <= maxVersion:
+            self.instances.append((instance.name, instance.baseUrl))
+            
+         try:
+            if instance.default.lower() == "true":
+               self.defaultInstance = instance.baseUrl
+         except: # Not a default instance
+            pass
+      if self.defaultInstance is None:
+         if len(self.instances) > 0: # Set to the first listed if no default
+            self.defaultInstance = self.instances[0][1]
+         else:
+            raise Exception, "No instances available"
+   
+   # .........................................
    def _login(self, userId, pwd):
       """
       @summary: Attempts to log a user in
@@ -364,8 +405,7 @@ class _Client(object):
       opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
       urllib2.install_opener(opener)
 
-      if userId != DEFAULT_POST_USER and userId != ARCHIVE_USER and \
-                        pwd is not None:
+      if userId is not None and pwd is not None:
          url = "%s/login" % self.server
          
          urlParams = [("username", userId), ("pword", pwd)]

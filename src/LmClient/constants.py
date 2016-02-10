@@ -4,7 +4,7 @@
 @version: 3.3.0
 @status: release
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -30,6 +30,5 @@ CONTENT_TYPES = {
                  "GTiff" : "image/tiff"
                 }
 
-LM_CLIENT_VERSION_URL = "http://svc.lifemapper.org/clients/versions.xml"
-LM_INSTANCES_URL = "http://svc.lifemapper.org/clients/instances.xml"
-   
+OTL_HINT_URL = "http://api.opentreeoflife.org/v2/tnrs/autocomplete_name"
+OTL_TREE_WEB_URL = "http://api.opentreeoflife.org/v2/tree_of_life/subtree"
