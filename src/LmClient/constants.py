@@ -30,5 +30,5 @@ CONTENT_TYPES = {
                  "GTiff" : "image/tiff"
                 }
 
-OTL_HINT_URL = "http://api.opentreeoflife.org/v2/tnrs/autocomplete_name"
-OTL_TREE_WEB_URL = "http://api.opentreeoflife.org/v2/tree_of_life/subtree"
+OTL_HINT_URL = "https://api.opentreeoflife.org/v2/tnrs/autocomplete_name"
+OTL_TREE_WEB_URL = "https://api.opentreeoflife.org/v2/tree_of_life/subtree"
