@@ -3,7 +3,7 @@
              services
 @author: CJ Grady / Jeff Cavner
 @version: 3.3.4
-@status: beta
+@status: release
 
 @license: Copyright (C) 2016, University of Kansas Center for Research
 
@@ -71,4 +71,3 @@ class OTLClient(object):
                                 body=jsonBody, 
                                 headers={"Content-Type": "application/json"})
       return res
-            
