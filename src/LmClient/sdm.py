@@ -362,6 +362,7 @@ class SDMClient(object):
       """
       @summary: Gets the package of output for a Lifemapper SDM experiment
       @param expId: The id of the experiment to be returned. [integer]
+      @param filename: The file location to write the package to
       @return: True if the write was successful
       """
       url = "%s/services/sdm/experiments/%s/package" % (self.cl.server, expId)
@@ -821,9 +822,6 @@ class SDMClient(object):
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
-         #f = open(filename, 'wb')
-         #f.write(cnt)
-         #f.close()
          return None
       else:
          return cnt
@@ -1341,6 +1339,8 @@ class SDMClient(object):
       @param title: (optional) A title for this type code [string]
       @param description: (optional) An extended description of this type code 
                              [string]
+      @param keywords: (optional) A list of keywords to associate with this 
+                          type code [list of strings]
       @return: An objectification of the type code that was newly created
       """
       params = [
@@ -1419,6 +1419,9 @@ class SDMClient(object):
       @summary: Queries the Lifemapper Solr index for archive data
       @param query: The partial string to match (genus species).
       @param maxReturned: (optional) The maximum number of results to return
+      @param serviceRoot: (optional) The web server root for the archive hint 
+                             service.  Defaults to the instance that the object 
+                             is connected to if None is provided.
       @note: This will return all models and projections associated with 
                 occurrence sets that match this query
       @rtype: A list of archive hits
