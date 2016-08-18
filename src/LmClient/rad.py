@@ -79,8 +79,7 @@ class RADClient(object):
       @param expId: The id of the experiment to delete
       """
       url = "%s/services/rad/experiments/%s" % (self.cl.server, expId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getExperiment(self, expId):
@@ -190,8 +189,7 @@ class RADClient(object):
       """
       url = "%s/services/rad/experiments/%s/buckets/%s" % (self.cl.server, 
                                                         experimentId, bucketId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
       
    # .........................................
    def getBucket(self, experimentId, bucketId):
@@ -956,8 +954,7 @@ class RADClient(object):
       """
       url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/%s" % \
                (self.cl.server, expId, bucketId, pamSumId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getPamSum(self, expId, bucketId, pamSumId):
@@ -1119,8 +1116,7 @@ class RADClient(object):
       @param layerId: The id of the layer to delete
       """
       url = "%s/services/rad/layers/%s" % (self.cl.server, layerId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getLayer(self, layerId):
@@ -1353,8 +1349,7 @@ class RADClient(object):
       @param shpId: The id of the shapegrid to delete
       """
       url = "%s/services/rad/shapegrids/%s" % (self.cl.server, shpId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
 
    # .........................................
    def getShapegrid(self, shpId):
