@@ -4,7 +4,7 @@
              Species Distribution Modeling services
 @author: CJ Grady
 @version: 3.3.4
-@status: beta
+@status: release
 
 @license: Copyright (C) 2016, University of Kansas Center for Research
 
@@ -235,6 +235,7 @@ class Algorithm(object):
       @param parameterName: The name of the parameter to set
       @param value: The new value to set the parameter to
       @note: Does not check to make sure the value is valid
+      @todo: Validate parameter value
       """
       for param in self.parameters:
          if param.name.lower() == parameterName.lower():
@@ -343,8 +344,7 @@ class SDMClient(object):
       @param expId: The id of the experiment to be deleted. [integer]
       """
       url = "%s/services/sdm/experiments/%s" % (self.cl.server, expId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getExperiment(self, expId):
@@ -545,8 +545,7 @@ class SDMClient(object):
       @param lyrId: The id of the layer to be deleted. [integer]
       """
       url = "%s/services/sdm/layers/%s" % (self.cl.server, lyrId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
 
    # .........................................
    def getLayer(self, lyrId):
@@ -767,8 +766,7 @@ class SDMClient(object):
       @param occId: The id of the occurrence set to be deleted. [integer]
       """
       url = "%s/services/sdm/occurrences/%s" % (self.cl.server, occId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getOccurrenceSet(self, occId):
@@ -976,8 +974,7 @@ class SDMClient(object):
       @param prjId: The id of the projection to be deleted. [integer]
       """
       url = "%s/services/sdm/projections/%s" % (self.cl.server, prjId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getProjection(self, prjId):
@@ -1150,8 +1147,7 @@ class SDMClient(object):
       @param scnId: The id of the scenario to be deleted. [integer]
       """
       url = "%s/services/sdm/scenarios/%s" % (self.cl.server, scnId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getScenario(self, scnId):
@@ -1292,8 +1288,7 @@ class SDMClient(object):
       @param tcId: The id of the type code to be deleted. [integer]
       """
       url = "%s/services/sdm/typecodes/%s" % (self.cl.server, tcId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getTypeCode(self, tcId):
