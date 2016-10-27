@@ -114,6 +114,11 @@ class LMClient(object):
    
    # .........................................
    def login(self, userId, pwd):
+      """
+      @summary: Log in to Lifemapper and establish a session
+      @param userId: The Lifemapper user id to use for this login request
+      @param pwd: The password for the specified user
+      """
       if userId is not None:
          self.rad = RADClient(self._cl)
          self.otl = OTLClient(self._cl)
