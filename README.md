@@ -1,3 +1,7 @@
+**The Lifemapper Client Library is Currently OUT OF DATE**
+
+A new version will be released soon
+
 Lifemapper Client Library
 ========
 
