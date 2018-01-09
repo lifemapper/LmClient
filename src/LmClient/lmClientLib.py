@@ -58,8 +58,8 @@ from LmClient.openTree import OTLClient
 from LmClient.rad import RADClient
 from LmClient.sdm import SDMClient
 
-from LmCommon.common.lmconstants import DEFAULT_POST_USER, SHAPEFILE_EXTENSIONS
-from LmCommon.common.localconstants import ARCHIVE_USER, WEBSERVICES_ROOT
+from LmCommon.common.lmconstants import DEFAULT_POST_USER, LMFormat
+from LmCommon.common.localconstants import PUBLIC_USER, WEBSERVICES_ROOT
 from LmCommon.common.lmXml import deserialize, fromstring
 from LmCommon.common.singleton import singleton
 from LmCommon.common.unicode import toUnicode
@@ -107,7 +107,7 @@ class LMClient(object):
    
    # .........................................
    def login(self, userId, pwd):
-      if userId not in [DEFAULT_POST_USER, ARCHIVE_USER]:
+      if userId not in [DEFAULT_POST_USER, PUBLIC_USER]:
          self.rad = RADClient(self._cl)
          self.otl = OTLClient(self._cl)
       self._cl._login(userId, pwd)
@@ -253,7 +253,7 @@ class _Client(object):
       if fn.endswith('.shp'):
          for f in glob.iglob("%s*" % fn.strip('shp')):
             ext = os.path.splitext(f)[1]
-            if ext in SHAPEFILE_EXTENSIONS:
+            if ext in LMFormat.SHAPE.getExtensions():
                files.append(f)
       else:
          raise Exception ("Filename must end in '.shp'")
@@ -364,7 +364,7 @@ class _Client(object):
       opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
       urllib2.install_opener(opener)
 
-      if userId != DEFAULT_POST_USER and userId != ARCHIVE_USER and \
+      if userId != DEFAULT_POST_USER and userId != PUBLIC_USER and \
                         pwd is not None:
          url = "%s/login" % self.server
          
