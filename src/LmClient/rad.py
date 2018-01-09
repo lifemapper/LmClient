@@ -1,10 +1,10 @@
 """
 @summary: Client functions for Lifemapper RAD web services
 @author: CJ Grady
-@version: 3.3.0
+@version: 3.3.4
 @status: release
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -61,11 +61,11 @@ class RADClient(object):
    def countExperiments(self, afterTime=None, beforeTime=None, epsgCode=None):
       """
       @summary: Counts experiments for a user
-      @param afterTime: List experiments with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: List experiments with creation times before this time 
-                            (ISO 8601 format)
-      @param epsgCode: The epsg code of the experiments to return
+      @param afterTime: (optional) List experiments with creation times after 
+                           this time (ISO 8601 format)
+      @param beforeTime: (optional) List experiments with creation times before 
+                            this time (ISO 8601 format)
+      @param epsgCode: (optional) The epsg code of the experiments to return
       """
       url = "%s/services/rad/experiments/" % self.cl.server
       return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
@@ -79,8 +79,7 @@ class RADClient(object):
       @param expId: The id of the experiment to delete
       """
       url = "%s/services/rad/experiments/%s" % (self.cl.server, expId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getExperiment(self, expId):
@@ -112,13 +111,13 @@ class RADClient(object):
                                        page=0, perPage=100, fullObjects=False):
       """
       @summary: Lists experiments for a user
-      @param afterTime: List experiments with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: List experiments with creation times before this time 
-                            (ISO 8601 format)
-      @param epsgCode: The epsg code of the experiments to return
-      @param page: The page of results
-      @param perPage: The number of results per page
+      @param afterTime: (optional) List experiments with creation times after 
+                           this time (ISO 8601 format)
+      @param beforeTime: (optional) List experiments with creation times before 
+                            this time (ISO 8601 format)
+      @param epsgCode: (optional) The epsg code of the experiments to return
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """
@@ -131,7 +130,7 @@ class RADClient(object):
                                               ("fullObjects", int(fullObjects))])
    
    # .........................................
-   def postExperiment(self, name, epsgCode, email=None, description=None):#, buckets=[], paLayers=[], ancLayers=[]):
+   def postExperiment(self, name, epsgCode, email=None, description=None):
       """
       @summary: Posts a new Lifemapper RAD experiment
       @param name: The name of this new experiment
@@ -139,6 +138,7 @@ class RADClient(object):
                           spatial data in this experiment
       @param email: (optional) An email address to associate with this 
                        experiment
+      @param description: (optional) A description of the submitted experiment
       """
       postXml = """\
       <lmRad:request xmlns:lmRad="http://lifemapper.org"
@@ -172,10 +172,10 @@ class RADClient(object):
       """
       @summary: Counts buckets for a user
       @param expId: The id of the experiment to count buckets for
-      @param afterTime: Count buckets with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: Count buckets with creation times before this time 
-                            (ISO 8601 format)
+      @param afterTime: (optional) Count buckets with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: (optional) Count buckets with creation times before 
+                            this time (ISO 8601 format)
       """
       url = "%s/services/rad/experiments/%s/buckets" % (self.cl.server, expId)
       return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
@@ -190,8 +190,7 @@ class RADClient(object):
       """
       url = "%s/services/rad/experiments/%s/buckets/%s" % (self.cl.server, 
                                                         experimentId, bucketId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
       
    # .........................................
    def getBucket(self, experimentId, bucketId):
@@ -249,12 +248,12 @@ class RADClient(object):
       """
       @summary: Lists buckets for a user
       @param expId: The id of the experiment to list buckets for
-      @param afterTime: List buckets with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: List buckets with creation times before this time 
-                            (ISO 8601 format)
-      @param page: The page of results
-      @param perPage: The number of results per page
+      @param afterTime: (optional) List buckets with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: (optional) List buckets with creation times before 
+                            this time (ISO 8601 format)
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """
@@ -263,11 +262,13 @@ class RADClient(object):
                                               ("beforeTime", beforeTime),
                                               ("page", page),
                                               ("perPage", perPage),
-                                              ("fullObjects", int(fullObjects))])
+                                              ("fullObjects", int(fullObjects))
+                                             ])
       return bkts
    
    # .........................................
-   def addBucket(self, expId, shpName, cellShape, cellSize, mapUnits, epsgCode, bbox, cutout=None):
+   def addBucket(self, expId, shpName, cellShape, cellSize, mapUnits, epsgCode, 
+                       bbox, cutout=None):
       """
       @summary: Adds a bucket to an experiment
       @param expId: The id of the experiment to add a bucket to
@@ -315,7 +316,8 @@ class RADClient(object):
     </wps:RawDataOutput>
   </wps:ResponseForm>
 </wps:Execute>
-""" % (shpName, cellShape, cellSize, mapUnits, epsgCode, bbox, "                 <lmRad:cutout>%s</lmRad:cutout>" % cutout if cutout is not None else "")
+""" % (shpName, cellShape, cellSize, mapUnits, epsgCode, bbox, 
+   "                 <lmRad:cutout>%s</lmRad:cutout>" % cutout if cutout is not None else "")
       
       url = "%s/services/rad/experiments/%s/addbucket" % (self.cl.server, expId)
       obj = self.cl.makeRequest(url, 
@@ -427,7 +429,7 @@ class RADClient(object):
       @summary: Requests that a bucket be randomized
       @param expId: The id of the experiment containing the bucket to randomize
       @param bucketId: The id of the bucket to randomize
-      @param method: (optional) The randomization method to use (swap | splotch)
+      @param method: (optional) The randomization method to use (swap | splotch | grady)
       @param numSwaps: (optional) The number of successful swaps to perform
       """
       postXml = """\
@@ -486,6 +488,7 @@ class RADClient(object):
       @param experimentId: The experiment containing buckets
       @param bucketId: The bucket to return
       @param headers: (optional) Add column headers and centroids to response
+      @param filePath: (optional) File location to write the original PAM CSV
       @note: Will probably change in release
       """
       url = "%s/services/rad/experiments/%s/buckets/%s/csv%s" % (self.cl.server, 
@@ -584,17 +587,19 @@ class RADClient(object):
       """
       @summary: Lists Ancillary layers for a user
       @param expId: The id of the experiment to list ancillary layers for
-      @param afterTime: List ancillary layers with creation times after this 
-                           time (ISO 8601 format)
-      @param beforeTime: List ancillary layers with creation times before this 
-                            time (ISO 8601 format)
-      @param epsgCode: List ancillary layers with this EPSG code
-      @param layerId: List ancillary layers that use the layer with this id
-      @param layerName: List ancillary layers with layers that have this name
-      @param page: The page of results
-      @param perPage: The number of results per page
-      @param ancillaryValueId: List ancillary layers that have the ancillary 
-                                  values specified by this id
+      @param afterTime: (optional) List ancillary layers with creation times 
+                           after this time (ISO 8601 format)
+      @param beforeTime: (optional) List ancillary layers with creation times 
+                            before this time (ISO 8601 format)
+      @param epsgCode: (optional) List ancillary layers with this EPSG code
+      @param layerId: (optional) List ancillary layers that use the layer with 
+                         this id
+      @param layerName: (optional) List ancillary layers with layers that have 
+                           this name
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
+      @param ancillaryValueId: (optional) List ancillary layers that have the 
+                                  ancillary values specified by this id
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """
@@ -610,21 +615,24 @@ class RADClient(object):
                                               ("fullObjects", int(fullObjects))])
       return ancLyrs
    
+   # .........................................
    def countAncillaryLayers(self, expId, afterTime=None, beforeTime=None, 
                                  epsgCode=None, layerId=None, layerName=None, 
                                  ancillaryValueId=None):
       """
       @summary: Counts Ancillary layers for a user
       @param expId: The id of the experiment to count ancillary layers for
-      @param afterTime: Count ancillary layers with creation times after this 
-                           time (ISO 8601 format)
-      @param beforeTime: Count ancillary layers with creation times before this 
-                            time (ISO 8601 format)
-      @param epsgCode: Count ancillary layers with this EPSG code
-      @param layerId: Count ancillary layers that use the layer with this id
-      @param layerName: Count ancillary layers with layers that have this name
-      @param ancillaryValueId: Count ancillary layers that have the ancillary 
-                                  values specified by this id
+      @param afterTime: (optional) Count ancillary layers with creation times 
+                           after this time (ISO 8601 format)
+      @param beforeTime: (optional) Count ancillary layers with creation times 
+                            before this time (ISO 8601 format)
+      @param epsgCode: (optional) Count ancillary layers with this EPSG code
+      @param layerId: (optional) Count ancillary layers that use the layer with 
+                         this id
+      @param layerName: (optional) Count ancillary layers with layers that have 
+                           this name
+      @param ancillaryValueId: (optional) Count ancillary layers that have the 
+                                  ancillary values specified by this id
       """
       url = "%s/services/rad/experiments/%s/anclayers" % (self.cl.server, expId)
       return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
@@ -756,20 +764,21 @@ class RADClient(object):
       """
       @summary: Lists Presence Absence layers for a user
       @param expId: The id of the experiment to list PA layers for
-      @param afterTime: List presence absence layers with creation times after 
-                           this time (ISO 8601 format)
-      @param beforeTime: List presence absence layers with creation times 
-                            before this time (ISO 8601 format)
-      @param epsgCode: List presence absence layers with this EPSG code
-      @param layerId: List presence absence layers that use the layer with this 
-                         id
-      @param layerName: List presence absence layers with layers that have this 
-                           name
-      @param page: The page of results
-      @param perPage: The number of results per page
-      @param presenceAbsenceId: List presence absence layers that have the set 
-                                   of presence absence values specified by this 
-                                   id
+      @param afterTime: (optional) List presence absence layers with creation 
+                           times after this time (ISO 8601 format)
+      @param beforeTime: (optional) List presence absence layers with creation 
+                            times before this time (ISO 8601 format)
+      @param epsgCode: (optional) List presence absence layers with this EPSG 
+                          code
+      @param layerId: (optional) List presence absence layers that use the 
+                         layer with this id
+      @param layerName: (optional) List presence absence layers with layers 
+                           that have this name
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
+      @param presenceAbsenceId: (optional) List presence absence layers that 
+                                   have the set of presence absence values 
+                                   specified by this id
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """
@@ -792,18 +801,19 @@ class RADClient(object):
       """
       @summary: Counts Presence Absence layers for a user
       @param expId: The id of the experiment to count PA layers for
-      @param afterTime: Count presence absence layers with creation times after 
-                           this time (ISO 8601 format)
-      @param beforeTime: Count presence absence layers with creation times 
-                            before this time (ISO 8601 format)
-      @param epsgCode: Count presence absence layers with this EPSG code
-      @param layerId: Count presence absence layers that use the layer with this 
-                         id
-      @param layerName: Count presence absence layers with layers that have this 
-                           name
-      @param presenceAbsenceId: Count presence absence layers that have the set 
-                                   of presence absence values specified by this 
-                                   id
+      @param afterTime: (optional) Count presence absence layers with creation 
+                           times after this time (ISO 8601 format)
+      @param beforeTime: (optional) Count presence absence layers with creation 
+                            times before this time (ISO 8601 format)
+      @param epsgCode: (optional) Count presence absence layers with this EPSG 
+                          code
+      @param layerId: (optional) Count presence absence layers that use the 
+                         layer with this id
+      @param layerName: (optional) Count presence absence layers with layers 
+                           that have this name
+      @param presenceAbsenceId: (optional) Count presence absence layers that 
+                                   have the set of presence absence values 
+                                   specified by this id
       """
       url = "%s/services/rad/experiments/%s/palayers" % (self.cl.server, expId)
       return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
@@ -931,13 +941,13 @@ class RADClient(object):
       @summary: Counts pamsums for a user
       @param expId: The id of the experiment
       @param bucketId: The id of the bucket
-      @param afterTime: Count pamsums with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: Count pamsums with creation times before this time 
-                            (ISO 8601 format)
-      @param randomized: 1 for random pamsums, 0 for original
-      @param randomMethod: Return pamsums that were randomized with this method.
-                              0-not random, 1-swap, 2-splotch
+      @param afterTime: (optional) Count pamsums with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: (optional) Count pamsums with creation times before 
+                            this time (ISO 8601 format)
+      @param randomized: (optional) 1 for random pamsums, 0 for original
+      @param randomMethod: (optional) Return pamsums that were randomized with 
+                              this method.  0-not random, 1-swap, 2-splotch
       """
       url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/" % \
                (self.cl.server, expId, bucketId)
@@ -956,8 +966,7 @@ class RADClient(object):
       """
       url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/%s" % \
                (self.cl.server, expId, bucketId, pamSumId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getPamSum(self, expId, bucketId, pamSumId):
@@ -981,6 +990,7 @@ class RADClient(object):
       @param bucketId: The id of the bucket containing the pamsum
       @param pamSumId: The id of the pamsum to return
       @param headers: (optional) Add column headers and centroids to response
+      @param filePath: (optional) File location to write PAM Sum CSV
       """
       url = "%s/services/rad/experiments/%s/buckets/%s/pamsums/%s/csv%s" % \
                (self.cl.server, expId, bucketId, pamSumId, 
@@ -1066,15 +1076,15 @@ class RADClient(object):
       @summary: Lists pamsums for a user
       @param expId: The id of the experiment
       @param bucketId: The id of the bucket
-      @param afterTime: List pamsums with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: List pamsums with creation times before this time 
-                            (ISO 8601 format)
-      @param page: The page of results
-      @param perPage: The number of results per page
-      @param randomized: 1 for random pamsums, 0 for original
-      @param randomMethod: Return pamsums that were randomized with this method.
-                              0-not random, 1-swap, 2-splotch
+      @param afterTime: (optional) List pamsums with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: (optional) List pamsums with creation times before 
+                            this time (ISO 8601 format)
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
+      @param randomized: (optional) 1 for random pamsums, 0 for original
+      @param randomMethod: (optional) Return pamsums that were randomized with 
+                              this method.  0-not random, 1-swap, 2-splotch
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """
@@ -1098,12 +1108,12 @@ class RADClient(object):
                          layerName=None):
       """
       @summary: Counts layers for a user
-      @param afterTime: Count layers with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: Count layers with creation times before this time 
-                            (ISO 8601 format)
-      @param epsgCode: Count layers with this EPSG code
-      @param layerName: Count layers that match this name
+      @param afterTime: (optional) Count layers with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: (optional) Count layers with creation times before 
+                            this time (ISO 8601 format)
+      @param epsgCode: (optional) Count layers with this EPSG code
+      @param layerName: (optional) Count layers that match this name
       """
       url = "%s/services/rad/layers" % self.cl.server
       lyrs = self.cl.getCount(url, parameters=[("afterTime", afterTime), 
@@ -1119,8 +1129,7 @@ class RADClient(object):
       @param layerId: The id of the layer to delete
       """
       url = "%s/services/rad/layers/%s" % (self.cl.server, layerId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getLayer(self, layerId):
@@ -1137,26 +1146,26 @@ class RADClient(object):
                         layerName=None, page=0, perPage=100, fullObjects=False):
       """
       @summary: Lists layers for a user
-      @param afterTime: List layers with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: List layers with creation times before this time 
-                            (ISO 8601 format)
-      @param epsgCode: List layers with this EPSG code
-      @param layerName: Return layers that match this name
-      @param page: The page of results
-      @param perPage: The number of results per page
+      @param afterTime: (optional) List layers with creation times after this 
+                           time (ISO 8601 format)
+      @param beforeTime: (optional) List layers with creation times before this  
+                            time (ISO 8601 format)
+      @param epsgCode: (optional) List layers with this EPSG code
+      @param layerName: (optional) Return layers that match this name
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """
       url = "%s/services/rad/layers" % self.cl.server
-      # @todo: Does this need userId in params?
       lyrs = self.cl.getList(url, parameters=[("afterTime", afterTime), 
                                               ("beforeTime", beforeTime),
                                               ("epsgCode", epsgCode),
                                               ("layerName", layerName),
                                               ("page", page),
                                               ("perPage", perPage),
-                                              ("fullObjects", int(fullObjects))])
+                                              ("fullObjects", int(fullObjects))
+                                             ])
       return lyrs
    
    # .........................................
@@ -1328,15 +1337,16 @@ class RADClient(object):
                             cellSides=None, layerId=None, layerName=None):
       """
       @summary: Counts shapegrids for a user
-      @param afterTime: Count shapegrids with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: Count shapegrids with creation times before this time 
-                            (ISO 8601 format)
-      @param epsgCode: The epsg code of the shapegrids to count
-      @param cellSides: The number of sides for each cell of the shapegrids.
-                           Use 4 for square grids and 6 for hexagonal.
-      @param layerId: Count shapegrids with this layer id
-      @param layerName: Count shapegrids with this layer name
+      @param afterTime: (optional) Count shapegrids with creation times after  
+                           this time (ISO 8601 format)
+      @param beforeTime: (optional) Count shapegrids with creation times before 
+                            this time (ISO 8601 format)
+      @param epsgCode: (optional) The epsg code of the shapegrids to count
+      @param cellSides: (optional) The number of sides for each cell of the 
+                           shapegrids.  Use 4 for square grids and 6 for 
+                           hexagonal.
+      @param layerId: (optional) Count shapegrids with this layer id
+      @param layerName: (optional) Count shapegrids with this layer name
       """
       url = "%s/services/rad/shapegrids/" % self.cl.server
       return self.cl.getCount(url, parameters=[("afterTime", afterTime), 
@@ -1353,8 +1363,7 @@ class RADClient(object):
       @param shpId: The id of the shapegrid to delete
       """
       url = "%s/services/rad/shapegrids/%s" % (self.cl.server, shpId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
 
    # .........................................
    def getShapegrid(self, shpId):
@@ -1372,17 +1381,18 @@ class RADClient(object):
                             page=0, perPage=100, fullObjects=False):
       """
       @summary: Lists shapegrids for a user
-      @param afterTime: List shapegrids with creation times after this time 
-                           (ISO 8601 format)
-      @param beforeTime: List shapegrids with creation times before this time 
-                            (ISO 8601 format)
-      @param epsgCode: The epsg code of the shapegrids to return
-      @param cellSides: The number of sides for each cell of the shapegrids.
-                           Use 4 for square grids and 6 for hexagonal.
-      @param layerId: Return shapegrids with this layer id
-      @param layerName: Return shapegrids with this layer name
-      @param page: The page of results
-      @param perPage: The number of results per page
+      @param afterTime: (optional) List shapegrids with creation times after 
+                           this time (ISO 8601 format)
+      @param beforeTime: (optional) List shapegrids with creation times before 
+                            this time (ISO 8601 format)
+      @param epsgCode: (optional) The epsg code of the shapegrids to return
+      @param cellSides: (optional) The number of sides for each cell of the 
+                           shapegrids.  Use 4 for square grids and 6 for 
+                           hexagonal.
+      @param layerId: (optional) Return shapegrids with this layer id
+      @param layerName: (optional) Return shapegrids with this layer name
+      @param page: (optional) The page of results
+      @param perPage: (optional) The number of results per page
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       """

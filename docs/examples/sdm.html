@@ -521,8 +521,8 @@
          <code>
             >>> cl = LMClient(userId='someUser', pwd='somePassword')
             >>> with open('/tmp/prj12345.asc', 'w') as outF:
-            >>>    asciiUrl = cl.sdm.getProjectionUrl(12345, frmt='AAIGrid')
-            >>>    outF.write(urllib2.urlopen(asciiUrl).read())
+            >>> &nbsp;&nbsp;&nbsp;asciiUrl = cl.sdm.getProjectionUrl(12345, frmt='AAIGrid')
+            >>> &nbsp;&nbsp;&nbsp;outF.write(urllib2.urlopen(asciiUrl).read())
             >>> cl.close()
          </code>
       </p>
@@ -749,7 +749,7 @@
             >>> cl = LMClient(userId='someUser', pwd='somePassword')
             >>> prj = cl.sdm.getProjection(12345)
             >>> cl.sdm.getOgcEndpoint(prj)
-            'http://lifemapper.org/ogc?map=data_54349&layer=prj_12345'
+            'http://svc.lifemapper.org/services/sdm/projections/12345/ogc?layer=prj_12345'
             >>> cl.close()
         </code>
       </p>

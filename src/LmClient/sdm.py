@@ -3,10 +3,10 @@
 @summary: Module containing client functions for interacting with Lifemapper
              Species Distribution Modeling services
 @author: CJ Grady
-@version: 3.3.0
-@status: beta
+@version: 3.3.4
+@status: release
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -42,8 +42,7 @@ from collections import namedtuple
 import json
 import re
 
-from LmClient.constants import CONTENT_TYPES, LM_INSTANCES_URL
-from LmCommon.common.lmconstants import Instances
+from LmClient.constants import CONTENT_TYPES
 from LmCommon.common.unicode import fromUnicode, toUnicode
 
 # .............................................................................
@@ -236,6 +235,7 @@ class Algorithm(object):
       @param parameterName: The name of the parameter to set
       @param value: The new value to set the parameter to
       @note: Does not check to make sure the value is valid
+      @todo: Validate parameter value
       """
       for param in self.parameters:
          if param.name.lower() == parameterName.lower():
@@ -258,8 +258,8 @@ class SDMClient(object):
       @param cl: Lifemapper client for connection to web services
       """
       self.cl = cl
-      self.algos = self._getAlgorithms()
-      self.instances = self._getInstances()
+      ## A list of algorithm objects.  Get the algorithm code from each with the 'code' attribute
+      self.algos = self._getAlgorithms() 
 
    # .........................................
    def _getAlgorithms(self):
@@ -272,13 +272,15 @@ class SDMClient(object):
       return obj
    
    # .........................................
-   def _getInstances(self):
+   def getAlgorithmCodes(self):
       """
-      @summary: Gets the available instances for query from the Lifemapper 
-                   server
+      @summary: Gets the list of available algorithm codes
+      @return: Available Lifemapper algorithm codes 
       """
-      obj = self.cl.makeRequest(LM_INSTANCES_URL, method="GET", objectify=True)
-      return obj
+      codes = []
+      for algo in self.algos:
+         codes.append(algo.code.lower())
+      return codes
    
    # .........................................
    def getAlgorithmFromCode(self, code):
@@ -298,25 +300,6 @@ class SDMClient(object):
       else:
          raise Exception("Algorithm code: %s was not recognized" % code)
       return a
-   
-   # .........................................
-   def getAvailableInstances(self):
-      """
-      @summary: Returns a list of (name, base service url) tuples of available 
-                   instances to be queried by the client
-      """
-      availableInstances = []
-      
-      myVersion = self.cl.getVersionNumbers()
-      
-      for instance in self.instances:
-         minVersion = self.cl.getVersionNumbers(verStr=instance.minimumClientVersion)
-         maxVersion = self.cl.getVersionNumbers(verStr=instance.maximumClientVersion)
-         
-         if myVersion >= minVersion and myVersion <= maxVersion:
-            availableInstances.append((instance.name, instance.baseUrl))
-      
-      return availableInstances
    
    # --------------------------------------------------------------------------
    # ===============
@@ -341,13 +324,13 @@ class SDMClient(object):
       @param epsgCode: (optional) Count only experiments with this EPSG code 
                           [integer]
       @param algorithmCode: (optional) Count only experiments generated with 
-                               this algorithm code.  See available algorithms 
-                               in the module documentation. [string]
+                               this algorithm code.  Get available algorithms
+                               from SDMClient.getAlgorithmCodes. [string]
       @param occurrenceSetId: (optional) Count only experiments generated from
                                  this occurrence set. [integer]
       @param status: (optional) Count only experiments with this model status.
-                        More information about status is available in the 
-                        module documentation. [integer]
+                        See core.LmCommon.common.lmconstants.JobStatus for 
+                        status documentation. [integer]
       @param public: (optional) If True, use the anonymous client if available
       @return: The total number of experiments that match the given criteria.
                   [integer]
@@ -373,8 +356,7 @@ class SDMClient(object):
       @param expId: The id of the experiment to be deleted. [integer]
       """
       url = "%s/services/sdm/experiments/%s" % (self.cl.server, expId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getExperiment(self, expId):
@@ -392,6 +374,7 @@ class SDMClient(object):
       """
       @summary: Gets the package of output for a Lifemapper SDM experiment
       @param expId: The id of the experiment to be returned. [integer]
+      @param filename: The file location to write the package to
       @return: True if the write was successful
       """
       url = "%s/services/sdm/experiments/%s/package" % (self.cl.server, expId)
@@ -421,13 +404,13 @@ class SDMClient(object):
       @param perPage: (optional) Return this many results per page. [integer]
       @param page: (optional) Return this page of results. [integer]
       @param algorithmCode: (optional) Return only experiments generated from 
-                               this algorithm.  See available algorithms in the
-                               module documentation. [string]
+                               this algorithm.  Get available algorithms codes 
+                               from SDMClient.getAlgorithmCodes(). [string]
       @param occurrenceSetId: (optional) Return only experiments generated from
                                  this occurrence set. [integer]
       @param status: (optional) Return only experiments with this status.  More
-                        information about status can be found in the module
-                        documentation. [integer]
+                        information about status can be found at 
+                        core.LmCommon.common.lmconstants.JobStatus. [integer]
       @param public: (optional) If True, use the anonymous client if available
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
@@ -456,7 +439,11 @@ class SDMClient(object):
                             email=None, name=None, description=None):
       """
       @summary: Post a new Lifemapper experiment
-      @param algorithm: An Lifemapper SDM algorithm object 
+      @param algorithm: An Lifemapper SDM algorithm object or algorithm code.  
+                           Use SDMClient.getAlgorithmFromCode to get an 
+                           algorithm object or just supply the desired 
+                           algorithm code if none of the parameters should be 
+                           different from the defaults. [Algorithm or string]
       @param mdlScn: The id of the model scenario to use for the experiment
                         [integer]
       @param occSetId: The id of the occurrence set to be used for the 
@@ -575,8 +562,7 @@ class SDMClient(object):
       @param lyrId: The id of the layer to be deleted. [integer]
       """
       url = "%s/services/sdm/layers/%s" % (self.cl.server, lyrId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
 
    # .........................................
    def getLayer(self, lyrId):
@@ -797,8 +783,7 @@ class SDMClient(object):
       @param occId: The id of the occurrence set to be deleted. [integer]
       """
       url = "%s/services/sdm/occurrences/%s" % (self.cl.server, occId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getOccurrenceSet(self, occId):
@@ -853,9 +838,6 @@ class SDMClient(object):
       cnt = self.cl.makeRequest(url, method="GET")
       if filename is not None:
          self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
-         #f = open(filename, 'wb')
-         #f.write(cnt)
-         #f.close()
          return None
       else:
          return cnt
@@ -970,15 +952,15 @@ class SDMClient(object):
       @param epsgCode: (optional) Count only projections that use this EPSG 
                           code. [integer]
       @param algorithmCode: (optional) Count only projections that have this 
-                               algorithm code.  See available algorithms in the 
-                               module documentation. [string]
+                               algorithm code.  Get available algorithm codes
+                               from SDMClient.getAlgorithmCodes. [string]
       @param expId: (optional) Count only projections generated from this 
                          experiment. [integer]
       @param occurrenceSetId: (optional) Count only experiments generated from 
                                  this occurrence set. [integer]
       @param status: (optional) Count only projections with this status. More
-                        information about status can be found in the module 
-                        documentation. [integer]
+                        information about status can be found at
+                        core.LmCommon.common.lmconstants.JobStatus. [integer]
       @param public: (optional) If True, use the anonymous client if available
       @return: The total number of projections that match the given criteria.
                   [integer]
@@ -1006,8 +988,7 @@ class SDMClient(object):
       @param prjId: The id of the projection to be deleted. [integer]
       """
       url = "%s/services/sdm/projections/%s" % (self.cl.server, prjId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getProjection(self, prjId):
@@ -1096,8 +1077,8 @@ class SDMClient(object):
       @param page: (optional) Return this page of results. [integer]
       @param algorithmCode: (optional) Return only projections that are 
                                generated from models generated from this 
-                               algorithm.  See available algorithms in the 
-                               module documentation. [string]
+                               algorithm.  Get available algorithm codes from
+                               SDMClient.getAlgorithmCodes. [string]
       @param expId: (optional) Return only projections generated from this
                          experiment. [integer]
       @param occurrenceSetId: (optional) Return only projections generated from
@@ -1106,14 +1087,15 @@ class SDMClient(object):
       @param scenarioId: (optional) Only return projections that use this 
                             scenario [integer]
       @param status: (optional) Return only projections that have this status. 
-                        More information about status can be found in the 
-                        module documentation. [integer]
+                        More information about status can be found at
+                        core.LmCommon.common.lmconstants.JobStatus. [integer]
       @param public: (optional) If True, use the anonymous client if available
       @param fullObjects: (optional) If True, return the full objects instead
                              of the list objects
       @return: Projections that match the specified parameters. [LmAttObj]
       @note: Returned object has metadata included.  Reference items with 
                 "items.item" property
+
       """
       params = [
                 ("afterTime", afterTime),
@@ -1180,8 +1162,7 @@ class SDMClient(object):
       @param scnId: The id of the scenario to be deleted. [integer]
       """
       url = "%s/services/sdm/scenarios/%s" % (self.cl.server, scnId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
    
    # .........................................
    def getScenario(self, scnId):
@@ -1322,8 +1303,7 @@ class SDMClient(object):
       @param tcId: The id of the type code to be deleted. [integer]
       """
       url = "%s/services/sdm/typecodes/%s" % (self.cl.server, tcId)
-      obj = self.cl.makeRequest(url, method="DELETE", objectify=True)
-      return obj
+      self.cl.makeRequest(url, method="DELETE", objectify=True)
     
    # .........................................
    def getTypeCode(self, tcId):
@@ -1376,6 +1356,8 @@ class SDMClient(object):
       @param title: (optional) A title for this type code [string]
       @param description: (optional) An extended description of this type code 
                              [string]
+      @param keywords: (optional) A list of keywords to associate with this 
+                          type code [list of strings]
       @return: An objectification of the type code that was newly created
       """
       params = [
@@ -1454,6 +1436,9 @@ class SDMClient(object):
       @summary: Queries the Lifemapper Solr index for archive data
       @param query: The partial string to match (genus species).
       @param maxReturned: (optional) The maximum number of results to return
+      @param serviceRoot: (optional) The web server root for the archive hint 
+                             service.  Defaults to the instance that the object 
+                             is connected to if None is provided.
       @note: This will return all models and projections associated with 
                 occurrence sets that match this query
       @rtype: A list of archive hits
@@ -1480,19 +1465,9 @@ class SDMClient(object):
       @note: This code should be hardened.  It is mainly for the Spring 2015 
                 iDigBio hackathon
       """
-      if instanceName.lower() == Instances.IDIGBIO.lower():
-         # Aimee: Edit here for iDigBio
-         # The searh hit objects have documentation in the "hint" function
-         # The binomial will probably be useful.  It is different than name 
-         #   because name is the display name that may include author 
-         #   information and binomial is just that.
-         pass
-      #elif instanceName.lower() == Instances.BISON.lower():
-         # Add Bison processing code here
-      else:
-         url = searchHit.downloadUrl
-         cnt = self.cl.makeRequest(url, method="GET")
-         self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
+      url = searchHit.downloadUrl
+      cnt = self.cl.makeRequest(url, method="GET")
+      self.cl.autoUnzipShapefile(cnt, filename, overwrite=overwrite)
 
    # .........................................
    def getOgcEndpoint(self, obj):

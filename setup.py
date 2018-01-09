@@ -3,10 +3,10 @@
 @author: CJ Grady
 @contact: cjgrady [at] ku [dot] edu
 @organization: Lifemapper (http://lifemapper.org)
-@version: 3.3.0
+@version: 3.3.4
 @status: release
 
-@license: Copyright (C) 2015, University of Kansas Center for Research
+@license: Copyright (C) 2016, University of Kansas Center for Research
 
           Lifemapper Project, lifemapper [at] ku [dot] edu, 
           Biodiversity Institute,
@@ -37,7 +37,7 @@ Species Distribution Modeling and Range and Diversity web services.
 from setuptools import setup, find_packages
 
 setup(name="Lifemapper_Client",
-      version="3.3.0",
+      version="3.3.4",
       description="A Python client for accessing Lifemapper web services",
       author="CJ Grady",
       author_email="cjgrady@ku.edu",

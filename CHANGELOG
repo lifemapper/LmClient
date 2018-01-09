@@ -1,0 +1,4 @@
+Version 3.3.4:
+--------------
+* LMClient constructor default argument for server is now None, determines from available instances
+* getAvailableInstances method moved to LMClient class from SDM client

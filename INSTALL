@@ -9,6 +9,7 @@ We acknowledge the support of grant BIO/EF #0851290 from the U.S. National Scien
 
 Configuration
 =============
+(obsolete)
 Set an environment variable, $LIFEMAPPER_CONFIG_FILE, that points to your 
 configuration file.  Some default configuration files are provided with the 
 other components.  Edit those files to match your environment.
